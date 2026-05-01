@@ -1,0 +1,12 @@
+{
+  "name": "diagnostico-ia-arkova",
+  "version": "1.0.0",
+  "description": "Diagnóstico de Madurez e Inteligencia Artificial - Arkova",
+  "main": "diagnostico_ia_arkova.html",
+  "scripts": {
+    "build": "echo 'Proyecto estático: No se requiere compilación. Listo para Vercel.'",
+    "start": "echo 'Abra diagnostico_ia_arkova.html en su navegador.'"
+  },
+  "author": "Arkova",
+  "license": "ISC"
+}

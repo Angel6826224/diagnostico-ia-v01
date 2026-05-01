@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diagnóstico IA · Arkova</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --cream: #F5F0E8;
+      --dark: #1A1A2E;
+      --navy: #2C3E6B;
+      --rust: #C0552A;
+      --steel: #5B7FA6;
+      --steel-light: #8AADC8;
+      --green: #2D6A4F;
+      --yellow: #E8A838;
+      --red-warn: #C0392B;
+      --neutral: #8A8A8A;
+      --border: rgba(26, 26, 46, 0.12);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── GRID NOISE TEXTURE ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(26, 26, 46, 0.03) 39px, rgba(26, 26, 46, 0.03) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(26, 26, 46, 0.03) 39px, rgba(26, 26, 46, 0.03) 40px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      position: relative;
+      z-index: 10;
+      background: var(--dark);
+      color: white;
+      padding: 48px 60px 40px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 40px;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: 'IA';
+      position: absolute;
+      right: -20px;
+      top: -40px;
+      font-family: 'Playfair Display', serif;
+      font-size: 280px;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.03);
+      letter-spacing: -0.05em;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .header-logo {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 20px;
+    }
+
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .header-title span {
+      color: var(--rust);
+    }
+
+    .header-sub {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 300;
+      max-width: 460px;
+      line-height: 1.6;
+    }
+
+    .header-badge {
+      background: var(--rust);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    /* ─── PROGRESS BAR ─── */
+    .progress-wrap {
+      position: relative;
+      z-index: 10;
+      background: var(--navy);
+      padding: 16px 60px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .progress-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.5);
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--rust);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    .progress-count {
+      font-size: 11px;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── MAIN LAYOUT ─── */
+    .main {
+      position: relative;
+      z-index: 10;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 40px;
+    }
+
+    /* ─── INTRO SCREEN ─── */
+    #screen-intro {
+      text-align: center;
+      padding: 80px 40px;
+    }
+
+    .intro-icon {
+      width: 72px;
+      height: 72px;
+      background: var(--dark);
+      color: white;
+      border-radius: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 32px;
+      font-size: 28px;
+    }
+
+    .intro-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .intro-desc {
+      font-size: 16px;
+      color: #555;
+      max-width: 520px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+
+    .dimensions-preview {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 40px 0;
+      text-align: left;
+    }
+
+    .dim-chip {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dim-chip-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--dark);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .dim-chip-text {
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* ─── QUESTION CARDS ─── */
+    .question-screen {
+      display: none;
+    }
+
+    .question-screen.active {
+      display: block;
+    }
+
+    .q-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .q-dimension {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--rust);
+    }
+
+    .q-sep {
+      color: var(--border);
+    }
+
+    .q-counter {
+      font-size: 11px;
+      color: var(--neutral);
+      letter-spacing: 0.06em;
+    }
+
+    .q-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 120px;
+      font-weight: 900;
+      color: rgba(26, 26, 46, 0.05);
+      line-height: 1;
+      position: absolute;
+      right: 0;
+      top: -20px;
+      user-select: none;
+      letter-spacing: -0.05em;
+    }
+
+    .q-card {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+      animation: slideIn 0.35s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .q-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--rust);
+    }
+
+    .q-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.4;
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+      max-width: 680px;
+    }
+
+    .q-hint {
+      font-size: 13px;
+      color: var(--neutral);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    /* ─── ANSWER OPTIONS ─── */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .opt-btn {
+      background: var(--cream);
+      border: 2px solid transparent;
+      padding: 16px 20px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .opt-btn:hover {
+      background: white;
+      border-color: var(--steel-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(26, 26, 46, 0.08);
+    }
+
+    .opt-btn.selected {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: white;
+    }
+
+    .opt-btn.selected .opt-score {
+      color: var(--rust);
+    }
+
+    .opt-score {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--steel);
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .opt-content {
+      flex: 1;
+    }
+
+    .opt-label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 3px;
+      line-height: 1.3;
+    }
+
+    .opt-desc {
+      font-size: 12px;
+      color: var(--neutral);
+      line-height: 1.4;
+    }
+
+    .opt-btn.selected .opt-desc {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .opt-btn.selected .opt-label {
+      color: white;
+    }
+
+    /* ─── NAV BUTTONS ─── */
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .btn-prev,
+    .btn-next,
+    .btn-results {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-prev {
+      background: transparent;
+      color: var(--neutral);
+      border: 1px solid var(--border);
+    }
+
+    .btn-prev:hover {
+      background: var(--cream);
+      color: var(--dark);
+    }
+
+    .btn-next,
+    .btn-results {
+      background: var(--dark);
+      color: white;
+    }
+
+    .btn-next:hover,
+    .btn-results:hover {
+      background: var(--rust);
+    }
+
+    .btn-next:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-next:disabled:hover {
+      background: var(--dark);
+    }
+
+    /* ─── RESULTS SCREEN ─── */
+    #screen-results {
+      display: none;
+    }
+
+    #screen-results.active {
+      display: block;
+    }
+
+    .results-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .score-ring-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .score-ring {
+      position: relative;
+      width: 160px;
+      height: 160px;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+      width: 160px;
+      height: 160px;
+    }
+
+    .score-ring-circle-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 8;
+    }
+
+    .score-ring-circle-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: square;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .score-ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .score-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .score-pct {
+      font-size: 13px;
+      color: var(--neutral);
+      margin-top: 2px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .results-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .results-subtitle {
+      font-size: 15px;
+      color: #555;
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ─── HEATMAP ─── */
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .section-sub {
+      font-size: 13px;
+      color: var(--neutral);
+      margin-bottom: 24px;
+    }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .heatmap-cell {
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: default;
+      animation: heatReveal 0.5s ease both;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+    }
+
+    .heatmap-cell::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+      pointer-events: none;
+    }
+
+    @keyframes heatReveal {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .heatmap-cell:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
+      filter: brightness(1.05);
+      z-index: 2;
+    }
+
+    .cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      z-index: 1;
+    }
+
+    .heatmap-cell .cell-icon {
+      font-size: 24px;
+      background: rgba(255, 255, 255, 0.25);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .heatmap-cell .cell-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .heatmap-cell .cell-label {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      line-height: 1.3;
+      margin-bottom: 24px;
+      z-index: 1;
+      flex: 1;
+    }
+
+    .cell-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      z-index: 1;
+    }
+
+    .heatmap-cell .cell-score {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .heatmap-cell .cell-score span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.7;
+      margin-left: 4px;
+    }
+
+    .heatmap-cell .cell-pct {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.9;
+      background: rgba(0, 0, 0, 0.15);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+
+    /* Heatmap color levels - Vibrant Gradients */
+    .heat-0 {
+      background: linear-gradient(135deg, #D94636, #B02A1C);
+      color: white;
+    }
+
+    .heat-1 {
+      background: linear-gradient(135deg, #F07041, #C74A1F);
+      color: white;
+    }
+
+    .heat-2 {
+      background: linear-gradient(135deg, #F5B84B, #D6931E);
+      color: var(--dark);
+    }
+
+    .heat-3 {
+      background: linear-gradient(135deg, #4A9C78, #22573F);
+      color: white;
+    }
+
+    .heat-4 {
+      background: linear-gradient(135deg, #2B5A96, #112952);
+      color: white;
+    }
+
+    /* Adjustments for dark text on light backgrounds */
+    .heat-2 .cell-icon {
+      background: rgba(0, 0, 0, 0.08);
+      box-shadow: none;
+    }
+
+    .heat-2 .cell-badge {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .heat-2 .cell-pct {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .heat-2::after {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    /* ─── HEATMAP LEGEND ─── */
+    .heat-legend {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .heat-legend-label {
+      font-size: 11px;
+      color: var(--neutral);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .heat-swatch {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--dark);
+    }
+
+    .heat-swatch-box {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ─── DIMENSION DETAILS ─── */
+    .dim-details {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 48px;
+    }
+
+    .dim-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      animation: slideIn 0.4s ease both;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .dim-row {
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      background: white;
+    }
+
+    .dim-answers {
+      padding: 20px 24px 4px;
+      background: #FAFAFA;
+      border-top: 1px solid var(--cream);
+    }
+
+    .dim-ans-item {
+      margin-bottom: 16px;
+      font-size: 13.5px;
+    }
+
+    .dim-ans-q {
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--dark);
+      line-height: 1.4;
+    }
+
+    .dim-ans-a {
+      color: var(--rust);
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .dim-ans-a::before {
+      content: '→';
+      opacity: 0.6;
+    }
+
+    .dim-interpretation {
+      padding: 16px 24px;
+      background: #F5F7FA;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--dark);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      border-left: 4px solid var(--navy);
+    }
+
+    .dim-row-icon {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .dim-row-info {
+      flex: 1;
+    }
+
+    .dim-row-name {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .dim-row-bar-track {
+      height: 4px;
+      background: var(--cream);
+      position: relative;
+    }
+
+    .dim-row-bar-fill {
+      height: 100%;
+      transition: width 1s ease;
+    }
+
+    /* ─── SCATTER MATRIX ─── */
+    .scatter-section {
+      margin-bottom: 48px;
+    }
+    .scatter-wrapper {
+      display: flex;
+      align-items: center;
+      margin-top: 24px;
+      margin-bottom: 48px;
+      gap: 16px;
+      padding: 24px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .scatter-y-axis {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      text-align: center;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .scatter-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .scatter-box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2 / 1.15;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    }
+    .scatter-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.25) 1px, transparent 1px);
+      background-size: 33.333% 33.333%;
+      pointer-events: none;
+    }
+    .scatter-x-axis {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .scatter-point {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--dark);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transform: translate(-50%, 50%);
+      padding: 8px;
+      line-height: 1.1;
+      transition: all 0.3s ease;
+      z-index: 10;
+      border: 3px solid white;
+    }
+    .scatter-point span strong {
+      display: block;
+      font-size: 13px;
+      color: var(--navy);
+      margin-top: 3px;
+    }
+    .scatter-point:hover {
+      transform: translate(-50%, 50%) scale(1.15);
+      z-index: 20;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+    .corner-label {
+      position: absolute;
+      font-size: 14px;
+      font-weight: 800;
+      color: white;
+      z-index: 5;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .cl-tl { top: 16px; left: 20px; }
+    .cl-tr { top: 16px; right: 20px; text-align: right; }
+    .cl-bl { bottom: 16px; left: 20px; }
+    .cl-br { bottom: 16px; right: 20px; text-align: right; }
+
+    /* ─── VIABILIDAD STATS (Image Match) ─── */
+    .via-stats-container {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 32px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      border-radius: 4px;
+    }
+    .via-stat-item {
+      flex: 1;
+      text-align: center;
+    }
+    .via-stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--neutral);
+      margin-bottom: 12px;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+    .via-stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .via-stat-max {
+      font-size: 12px;
+      color: var(--neutral);
+    }
+    .via-stat-bar {
+      height: 4px;
+      background: #F0F0F0;
+      margin-top: 12px;
+      position: relative;
+    }
+    .via-stat-fill {
+      height: 100%;
+      background: var(--rust);
+      transition: width 1s ease;
+    }
+
+    /* ─── VIABILIDAD BADGE (Yellow Box) ─── */
+    .via-badge-box {
+      border: 1px solid #F5C066;
+      background: #FFF9F0;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .via-badge-tag {
+      background: #E8A838;
+      color: white;
+      padding: 12px 16px;
+      font-weight: 800;
+      text-align: center;
+      min-width: 120px;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+    .via-badge-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--dark);
+    }
+    
+    @media (max-width: 640px) {
+      .scatter-box { aspect-ratio: 1 / 1.2; }
+      .scatter-point { width: 56px; height: 56px; font-size: 8px; }
+      .scatter-wrapper { flex-direction: column; padding: 16px; }
+      .scatter-y-axis { writing-mode: horizontal-tb; transform: none; margin-bottom: -4px; }
+      .via-stats-container { flex-direction: column; gap: 32px; }
+      .via-badge-box { flex-direction: column; text-align: center; }
+    }
+
+    .dim-row-score {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: right;
+      line-height: 1;
+    }
+
+    .dim-row-max {
+      font-size: 11px;
+      color: var(--neutral);
+      text-align: right;
+    }
+
+    /* ─── RECOMMENDATIONS ─── */
+    .recs-grid {
+      display: block;
+      margin-bottom: 48px;
+    }
+
+    .rec-dim-group {
+      background: white;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .rec-dim-header {
+      background: var(--navy);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 13px;
+    }
+    .rec-dim-icon {
+      font-size: 16px;
+    }
+    .rec-dim-body {
+      padding: 16px 20px;
+    }
+    .rec-dim-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #444;
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    .rec-dim-text:last-child { margin-bottom: 0; }
+    .rec-dim-text::before {
+      content: '●';
+      position: absolute;
+      left: 0;
+      color: var(--rust);
+      font-size: 10px;
+      top: 2px;
+    }
+
+    /* ─── CTA STRIP ─── */
+    .cta-strip {
+      background: var(--dark);
+      color: white;
+      padding: 40px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .cta-strip h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .cta-strip p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .cta-contacts {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      font-size: 14px;
+    }
+
+    .cta-contacts a {
+      color: var(--rust);
+      text-decoration: none;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-restart {
+      margin-top: 24px;
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .btn-restart:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* ─── VIABILIDAD MATRIX ─── */
+    .viabilidad-matrix {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
+      margin-bottom: 32px;
+    }
+
+    .via-cell {
+      padding: 14px 8px;
+      text-align: center;
+      font-size: 11px;
+      position: relative;
+    }
+
+    .via-cell.header {
+      background: var(--dark);
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    .via-cell.categoria {
+      background: var(--navy);
+      color: white;
+      font-weight: 600;
+      font-size: 11px;
+      text-align: left;
+      padding: 12px;
+      grid-column: span 5;
+    }
+
+    .via-cell.subcategoria {
+      background: var(--steel);
+      color: white;
+      font-weight: 500;
+      font-size: 10px;
+      text-align: left;
+      padding: 10px 12px;
+    }
+
+    .via-cell.pregunta {
+      background: white;
+      border: 1px solid var(--border);
+      text-align: left;
+      padding: 10px;
+      font-size: 10px;
+      line-height: 1.3;
+    }
+
+    .via-cell.puntaje {
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .via-cell.resp-1 {
+      background: #FDECEA;
+    }
+
+    .via-cell.resp-2 {
+      background: #FEF0E8;
+    }
+
+    .via-cell.resp-3 {
+      background: #FEF3E2;
+    }
+
+    .via-cell.resp-4 {
+      background: #E8F5EE;
+    }
+
+    .via-cell.answered {
+      background: var(--dark);
+      color: white;
+      font-weight: 700;
+    }
+
+    .via-cell.not-answered {
+      background: #FDECEA;
+      color: var(--red-warn);
+      font-weight: 600;
+    }
+
+    .via-matrix-legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+      font-size: 11px;
+    }
+
+    .via-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .via-legend-box {
+      width: 14px;
+      height: 14px;
+    }
+
+    .via-summary {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .via-summary-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .via-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .via-summary-item {
+      text-align: center;
+    }
+
+    .via-summary-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--neutral);
+      margin-bottom: 6px;
+    }
+
+    .via-summary-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .via-summary-max {
+      font-size: 11px;
+      color: var(--neutral);
+    }
+
+    .via-summary-bar {
+      height: 4px;
+      background: var(--cream);
+      margin-top: 6px;
+    }
+
+    .via-summary-fill {
+      height: 100%;
+      transition: width 0.8s ease;
+    }
+
+    .via-summary {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+
+    .via-summary-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .via-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .via-summary-item {
+      text-align: center;
+    }
+
+    .via-summary-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--neutral);
+      margin-bottom: 6px;
+    }
+
+    .via-summary-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .via-summary-max {
+      font-size: 11px;
+      color: var(--neutral);
+    }
+
+    .via-summary-bar {
+      height: 4px;
+      background: var(--cream);
+      margin-top: 6px;
+    }
+
+    .via-summary-fill {
+      height: 100%;
+      transition: width 0.8s ease;
+    }
+
+    .via-matrix-result {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .via-matrix-badge {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 8px 20px;
+    }
+
+    .via-matrix-text {
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .via-matrix-recomendacion {
+      background: white;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--rust);
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+
+    .via-matrix-recomendacion-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .via-matrix-recomendacion-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #555;
+    }
+
+    /* ─── PRINT BUTTON ─── */
+    .btn-print {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      background: var(--navy);
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-print:hover {
+      background: var(--rust);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 26, 46, 0.2);
+    }
+
+    .btn-print-secondary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 14px 32px;
+      background: var(--dark);
+      color: white;
+      border: 2px solid var(--dark);
+      cursor: pointer;
+      transition: all 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-print-secondary:hover {
+      background: white;
+      color: var(--dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(26, 26, 46, 0.15);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      .header {
+        padding: 32px 24px;
+      }
+
+      .progress-wrap {
+        padding: 12px 24px;
+      }
+
+      .main {
+        padding: 40px 20px;
+      }
+
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .heatmap-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .dimensions-preview {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .q-number {
+        font-size: 80px;
+      }
+
+      .viabilidad-matrix {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .via-cell.categoria {
+        grid-column: span 3;
+      }
+
+      .via-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .btn-print {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ─── HEADER ─── -->
+  <div class="header">
+    <div>
+      <div class="header-logo">Arkova · Diagnóstico Empresarial</div>
+      <div class="header-badge">Evaluación Gratuita</div>
+      <h1 class="header-title">Índice de Adopción<br>de <span>Inteligencia Artificial</span></h1>
+      <p class="header-sub">22 preguntas estratégicas para medir el nivel real de IA en su negocio y obtener un plan de
+        acción personalizado.</p>
+    </div>
+  </div>
+
+  <!-- ─── PROGRESS ─── -->
+  <div class="progress-wrap" id="progress-wrap" style="display:none">
+    <span class="progress-label">Progreso</span>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <span class="progress-count" id="progress-count">0 / 22</span>
+  </div>
+
+  <!-- ─── MAIN ─── -->
+  <div class="main">
+
+    <!-- INTRO -->
+    <div id="screen-intro">
+      <div class="intro-icon">⚙</div>
+      <h2 class="intro-title">¿Qué tan preparado<br>está su negocio para la IA?</h2>
+      <p class="intro-desc">Este diagnóstico evalúa 7 dimensiones clave de su empresa. Al finalizar recibirá un mapa de
+        calor con su nivel de adopción y recomendaciones concretas de acción, y una matriz de viabilidad de IA.</p>
+      <div class="dimensions-preview">
+        <div class="dim-chip">
+          <div class="dim-chip-icon">⚡</div>
+          <div class="dim-chip-text">Operaciones</div>
+        </div>
+        <div class="dim-chip">
+          <div class="dim-chip-icon">🔗</div>
+          <div class="dim-chip-text">Cadena de Suministro</div>
+        </div>
+        <div class="dim-chip">
+          <div class="dim-chip-icon">📊</div>
+          <div class="dim-chip-text">Toma de Decisiones</div>
+        </div>
+        <div class="dim-chip">
+          <div class="dim-chip-icon">💬</div>
+          <div class="dim-chip-text">Atención al Cliente</div>
+        </div>
+        <div class="dim-chip">
+          <div class="dim-chip-icon">🗄</div>
+          <div class="dim-chip-text">Datos e Infraestructura</div>
+        </div>
+        <div class="dim-chip">
+          <div class="dim-chip-icon">🧠</div>
+          <div class="dim-chip-text">Talento y Liderazgo</div>
+        </div>
+        <div class="dim-chip">
+          <div class="dim-chip-icon">🎯</div>
+          <div class="dim-chip-text">Viabilidad de IA</div>
+        </div>
+      </div>
+      <button class="btn-next" onclick="startAssessment()" style="font-size:14px;padding:18px 48px;">Comenzar
+        Diagnóstico &nbsp;→</button>
+    </div>
+
+    <!-- QUESTION SCREENS (generated by JS) -->
+    <div id="questions-container"></div>
+
+    <!-- RESULTS -->
+    <div id="screen-results">
+      <div class="results-header">
+        <div class="score-ring-wrap">
+          <div class="score-ring">
+            <svg viewBox="0 0 160 160">
+              <circle class="score-ring-circle-bg" cx="80" cy="80" r="68" />
+              <circle class="score-ring-circle-fill" id="ring-fill" cx="80" cy="80" r="68" stroke-dasharray="427"
+                stroke-dashoffset="427" />
+            </svg>
+            <div class="score-ring-label">
+              <span class="score-number" id="score-number">0</span>
+              <span class="score-pct" id="score-pct">/ 88 pts</span>
+            </div>
+          </div>
+        </div>
+        <div class="level-badge" id="level-badge">—</div>
+        <h2 class="results-title" id="results-title">—</h2>
+        <p class="results-subtitle" id="results-subtitle">—</p>
+      </div>
+
+      <!-- RESULTS FLOW -->
+      <div id="results-flow-container"></div>
+
+      <!-- RECOMMENDATIONS -->
+      <div class="section-title">Plan de Acción Personalizado</div>
+      <div class="section-sub">Recomendaciones priorizadas según sus resultados.</div>
+      <div class="recs-grid" id="recs-grid"></div>
+
+
+      <!-- CTA -->
+      <div class="cta-strip">
+        <h3>El siguiente paso es tuyo.</h3>
+        <p>La IA no reemplazará tu negocio — pero los negocios que usan IA sí reemplazarán al tuyo si no actúas hoy.
+          Contáctanos para una sesión estratégica personalizada.</p>
+        <div class="cta-contacts">
+          <a href="mailto:contacto@arkova.mx">✉ contacto@arkova.mx</a>
+          <a href="tel:6181339828">📱 618-133-9828</a>
+        </div>
+        <br>
+        <button class="btn-restart" onclick="restartAssessment()">↺ Realizar diagnóstico de nuevo</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+  <script>
+    // ─────────────────────────────────────────
+    // DATA: 12 QUESTIONS ACROSS 6 DIMENSIONS
+    // ─────────────────────────────────────────
+    const dimensions = [
+      { id: 'ops', label: 'Operaciones', icon: '⚡', maxPts: 8 },
+      { id: 'supply', label: 'Cadena de Suministro', icon: '🔗', maxPts: 8 },
+      { id: 'decisions', label: 'Toma de Decisiones', icon: '📊', maxPts: 8 },
+      { id: 'cx', label: 'Atención al Cliente', icon: '💬', maxPts: 8 },
+      { id: 'data', label: 'Datos e Infraestructura', icon: '🗄', maxPts: 8 },
+      { id: 'talent', label: 'Talento y Liderazgo', icon: '🧠', maxPts: 8 },
+      { id: 'viabilidad', label: 'Viabilidad de IA', icon: '🎯', maxPts: 40 },
+    ];
+
+    const questions = [
+      // OPERACIONES (Q1, Q2)
+      {
+        id: 1, dim: 'ops',
+        text: '¿Qué porcentaje de sus tareas operativas diarias (facturación, reportes, agenda) se ejecutan de forma automática sin intervención humana?',
+        hint: 'Piense en procesos que hoy en día requieren que alguien los haga manualmente.',
+        options: [
+          { score: 1, label: 'Menos del 10%', desc: 'Casi todo se hace manualmente' },
+          { score: 2, label: '10% – 30%', desc: 'Algunas automatizaciones básicas' },
+          { score: 3, label: '30% – 60%', desc: 'Automatización moderada en marcha' },
+          { score: 4, label: 'Más del 60%', desc: 'Alta automatización operativa' },
+        ]
+      },
+      {
+        id: 2, dim: 'ops',
+        text: '¿Ha integrado alguna herramienta de IA (ChatGPT, Copilot, Make, n8n u otras) directamente en los flujos de trabajo de su equipo?',
+        hint: 'No solo "la he probado", sino que está activa en procesos reales de la empresa.',
+        options: [
+          { score: 1, label: 'No, nunca la hemos usado', desc: 'Aún no hemos iniciado' },
+          { score: 2, label: 'Solo la uso yo personalmente', desc: 'Uso individual, no integrado' },
+          { score: 3, label: 'Algunos equipos la usan', desc: 'Adopción parcial en proceso' },
+          { score: 4, label: 'Está integrada en nuestros procesos', desc: 'IA embebida en operaciones' },
+        ]
+      },
+      // CADENA DE SUMINISTRO (Q3, Q4)
+      {
+        id: 3, dim: 'supply',
+        text: '¿Cómo gestiona actualmente el inventario y la planificación de la demanda en su negocio?',
+        hint: 'Evalúe qué tan anticipado y preciso es su control de stock y proveedores.',
+        options: [
+          { score: 1, label: 'De forma reactiva y manual', desc: 'Pedimos cuando se nos acaba' },
+          { score: 2, label: 'Con hojas de cálculo o sistemas básicos', desc: 'Registro manual sin predicción' },
+          { score: 3, label: 'Con un sistema ERP o software de gestión', desc: 'Datos centralizados pero sin IA' },
+          { score: 4, label: 'Con predicción algorítmica o IA', desc: 'Anticipamos demanda con datos' },
+        ]
+      },
+      {
+        id: 4, dim: 'supply',
+        text: '¿Qué visibilidad tiene sobre el estado de sus proveedores, entregas y cuellos de botella en tiempo real?',
+        hint: 'Piense en qué tan rápido detecta y reacciona ante un problema en su cadena.',
+        options: [
+          { score: 1, label: 'Prácticamente ninguna', desc: 'Me entero cuando ya es tarde' },
+          { score: 2, label: 'Visibilidad limitada y tardía', desc: 'Información con días de retraso' },
+          { score: 3, label: 'Visibilidad parcial por área', desc: 'Algunos puntos monitoreados' },
+          { score: 4, label: 'Visibilidad total en tiempo real', desc: 'Dashboard actualizado al momento' },
+        ]
+      },
+      // TOMA DE DECISIONES (Q5, Q6)
+      {
+        id: 5, dim: 'decisions',
+        text: '¿En qué se basa principalmente para tomar decisiones estratégicas importantes en su negocio?',
+        hint: 'Piense en su última decisión importante: ¿qué información usó?',
+        options: [
+          { score: 1, label: 'Experiencia e intuición', desc: 'Confío en mi instinto empresarial' },
+          { score: 2, label: 'Reportes históricos mensuales', desc: 'Analizo datos del pasado reciente' },
+          { score: 3, label: 'Datos en tiempo real con dashboards', desc: 'Toma de decisiones basada en datos' },
+          { score: 4, label: 'Análisis predictivo e IA', desc: 'Anticipo escenarios futuros con algoritmos' },
+        ]
+      },
+      {
+        id: 6, dim: 'decisions',
+        text: '¿Con qué frecuencia usa herramientas de análisis de datos o IA para identificar oportunidades de negocio?',
+        hint: 'Por ejemplo: analizar qué productos vender más, a qué clientes contactar, etc.',
+        options: [
+          { score: 1, label: 'Nunca', desc: 'No tenemos esa práctica' },
+          { score: 2, label: 'Ocasionalmente, sin método', desc: 'Cuando alguien lo propone' },
+          { score: 3, label: 'Mensualmente de forma estructurada', desc: 'Reuniones de análisis regulares' },
+          { score: 4, label: 'Continuamente y de forma automatizada', desc: 'Alertas y reportes automáticos' },
+        ]
+      },
+      // ATENCIÓN AL CLIENTE (Q7, Q8)
+      {
+        id: 7, dim: 'cx',
+        text: '¿Cómo atiende a sus clientes fuera del horario comercial o cuando su equipo no está disponible?',
+        hint: 'Considere solicitudes, dudas, quejas o seguimiento de pedidos.',
+        options: [
+          { score: 1, label: 'No los atendemos fuera de horario', desc: 'El cliente espera al día siguiente' },
+          { score: 2, label: 'Mensajes automáticos genéricos', desc: '"Gracias, le respondemos pronto"' },
+          { score: 3, label: 'Chatbot básico con respuestas predefinidas', desc: 'FAQ automatizado, sin IA real' },
+          { score: 4, label: 'IA conversacional 24/7 personalizada', desc: 'Resuelve, vende y escala solo' },
+        ]
+      },
+      {
+        id: 8, dim: 'cx',
+        text: '¿Qué tan personalizadas son sus comunicaciones y ofertas hacia los clientes?',
+        hint: 'Piense en emails, ofertas, recordatorios: ¿son iguales para todos o adaptados a cada uno?',
+        options: [
+          { score: 1, label: 'Genéricas, igual para todos', desc: 'Un mensaje para toda la base' },
+          { score: 2, label: 'Segmentadas por grupos básicos', desc: 'Por región, producto o monto' },
+          { score: 3, label: 'Personalizadas por historial del cliente', desc: 'Basadas en compras previas' },
+          { score: 4, label: 'Hiper-personalizadas con IA en tiempo real', desc: 'Cada mensaje es único y predictivo' },
+        ]
+      },
+      // DATOS E INFRAESTRUCTURA (Q9, Q10)
+      {
+        id: 9, dim: 'data',
+        text: '¿En qué estado se encuentran los datos de su negocio (ventas, clientes, inventario)?',
+        hint: 'Piense en qué tan accesibles, limpios y organizados están para su equipo.',
+        options: [
+          { score: 1, label: 'Dispersos en Excel y carpetas', desc: 'Silos de información desconectados' },
+          { score: 2, label: 'En un sistema pero poco estructurado', desc: 'Datos sin estándar ni gobierno' },
+          { score: 3, label: 'Centralizados y limpios en un CRM/ERP', desc: 'Accesibles y relativamente ordenados' },
+          { score: 4, label: 'Integrados, limpios y listos para IA', desc: 'Arquitectura de datos robusta' },
+        ]
+      },
+      {
+        id: 10, dim: 'data',
+        text: '¿Tiene implementadas medidas de ciberseguridad y privacidad de datos en su empresa?',
+        hint: 'Protección de datos de clientes, backups, accesos controlados, políticas de seguridad.',
+        options: [
+          { score: 1, label: 'Casi ninguna medida formal', desc: 'Confiamos en que "no nos va a pasar"' },
+          { score: 2, label: 'Medidas básicas (antivirus, contraseñas)', desc: 'Protección mínima instalada' },
+          { score: 3, label: 'Políticas documentadas y herramientas', desc: 'Proceso de seguridad establecido' },
+          { score: 4, label: 'Seguridad avanzada y auditorías regulares', desc: 'Cumplimiento y monitoreo continuo' },
+        ]
+      },
+      // TALENTO Y LIDERAZGO (Q11, Q12)
+      {
+        id: 11, dim: 'talent',
+        text: '¿Cuál es el nivel de conocimiento y uso de IA en su equipo directivo y colaboradores clave?',
+        hint: 'Más allá de "saben que existe", ¿la usan activamente en su trabajo?',
+        options: [
+          { score: 1, label: 'Muy bajo, hay resistencia', desc: '"Eso es muy técnico para nosotros"' },
+          { score: 2, label: 'Curiosidad pero sin adopción real', desc: 'Han probado algo, no lo usan' },
+          { score: 3, label: 'Varios la usan en tareas cotidianas', desc: 'Adopción espontánea creciendo' },
+          { score: 4, label: 'Alta adopción con capacitación formal', desc: 'Cultura de IA instalada en el equipo' },
+        ]
+      },
+      {
+        id: 12, dim: 'talent',
+        text: '¿Existe en su empresa una estrategia o hoja de ruta para implementar IA en los próximos 12 meses?',
+        hint: 'No solo "tenemos ganas", sino un plan con responsables, fechas y presupuesto.',
+        options: [
+          { score: 1, label: 'No existe ni se ha discutido', desc: 'El tema no está en la agenda' },
+          { score: 2, label: 'Se ha hablado pero sin plan concreto', desc: 'Ideas sueltas sin estructura' },
+          { score: 3, label: 'Hay iniciativas puntuales en marcha', desc: 'Proyectos aislados sin hoja de ruta' },
+          { score: 4, label: 'Tenemos una estrategia IA documentada', desc: 'Plan con KPIs, plazos y presupuesto' },
+        ]
+      },
+      // VIABILIDAD DE IA - Madurez Digital: Datos (Q13)
+      {
+        id: 13, dim: 'viabilidad',
+        text: '¿La información operativa se encuentra en la nube/bases de datos o papel/local?',
+        hint: 'Evalúe dónde están almacenados los datos operativos de su empresa.',
+        options: [
+          { score: 1, label: 'En papel o archivos locales', desc: 'Información física o en computadoras locales sin respaldo' },
+          { score: 2, label: 'En hojas de cálculo locales', desc: 'Excel o similar sin compartir ni versionar' },
+          { score: 3, label: 'En la nube de forma parcial', desc: 'Algunos datos en Drive, Dropbox u otra nube' },
+          { score: 4, label: 'Todo en la nube/bases de datos centralizadas', desc: 'Datos centralizados, accesibles y backups automáticos' },
+        ]
+      },
+      // VIABILIDAD DE IA - Madurez Digital: Procesos (Q14)
+      {
+        id: 14, dim: 'viabilidad',
+        text: '¿Existen manuales de procedimientos claros y seguidos por el equipo?',
+        hint: 'Piense en si hay documentación formal de cómo se hacen las cosas.',
+        options: [
+          { score: 1, label: 'No existen manuales', desc: 'Cada quien hace las cosas a su manera' },
+          { score: 2, label: 'Manuales informales o desactualizados', desc: 'Hay algo documentado pero no se consulta' },
+          { score: 3, label: 'Manuales existe pero no se siguen consistentemente', desc: 'Hay documentación pero el equipo no la aplica' },
+          { score: 4, label: 'Manuales claros y usados por todo el equipo', desc: 'Procesos documentados y ejecutados según lo establecido' },
+        ]
+      },
+      // VIABILIDAD DE IA - Madurez Digital: Software (Q15)
+      {
+        id: 15, dim: 'viabilidad',
+        text: '¿Uso habitual de herramientas de gestión (Slack, Notion, CRM, ERP, etc)?',
+        hint: 'Evalúe el nivel de adopción de herramientas digitales de colaboración y gestión.',
+        options: [
+          { score: 1, label: 'Sin herramientas digitales de gestión', desc: 'Comunicación por WhatsApp, sin sistemas centralizados' },
+          { score: 2, label: 'Solo email y hojas de cálculo', desc: 'Herramientas básicas sin integración' },
+          { score: 3, label: 'Uso parcial de 1-2 herramientas', desc: 'CRM o ERP parcial, no integrado con otras áreas' },
+          { score: 4, label: 'Ecosistema completo integrado', desc: 'Slack + Notion + CRM + ERP funcionando juntos' },
+        ]
+      },
+      // VIABILIDAD DE IA - Madurez Digital: Talento (Q16)
+      {
+        id: 16, dim: 'viabilidad',
+        text: '¿Personal formado en herramientas digitales o IA en el último año?',
+        hint: 'Considere capacitaciones, cursos o talleres realizados.',
+        options: [
+          { score: 1, label: 'Ninguna formación en el último año', desc: 'Sin capacitación en herramientas digitales' },
+          { score: 2, label: 'Formación individual', desc: 'Algunos aprendieron por su cuenta, sin apoyo empresa' },
+          { score: 3, label: 'Algunas formaciones grupales', desc: 'Sesiones puntuales de capacitación para algunos equipos' },
+          { score: 4, label: 'Programa formal de formación en herramientas digitales/IA', desc: 'Capacitación estructurada con presupuesto y seguimiento' },
+        ]
+      },
+      // VIABILIDAD DE IA - Madurez Digital: Cultura (Q17)
+      {
+        id: 17, dim: 'viabilidad',
+        text: '¿Decisiones basadas en datos en tiempo real vs. Manejo por el persona en excel, Drive?',
+        hint: 'Piense en cómo se toman las decisiones: ¿con datos frescos o con reportes desactualizados?',
+        options: [
+          { score: 1, label: 'Decisiones por intuición sin datos', desc: 'El jefe decide "por experiencia" sin consultar métricas' },
+          { score: 2, label: 'Reportes en Excel/Drive actualizados semanalmente', desc: 'Datos estáticos que requieren manipulación manual' },
+          { score: 3, label: 'Dashboard parcial con datos de hace 1-2 días', desc: 'Información disponible pero con retraso significativo' },
+          { score: 4, label: 'Datos en tiempo real para toma de decisiones', desc: 'Métricas actualizadas al momento con alertas automáticas' },
+        ]
+      },
+      // VIABILIDAD DE IA - Susceptibilidad: Repetitividad (Q18)
+      {
+        id: 18, dim: 'viabilidad',
+        text: '¿Tareas administrativas idénticas realizadas diariamente?',
+        hint: 'Identifique procesos que se repiten igual todos los días sin variación.',
+        options: [
+          { score: 1, label: 'Ninguna tarea repetitiva identificable', desc: 'Cada día es diferente, pocos patrones' },
+          { score: 2, label: '1-2 tareas repetitivas menores', desc: 'Copiar datos, archivar, enviar mismos emails' },
+          { score: 3, label: '3-5 tareas repetitivas significativas', desc: 'Reportes, altas de clientes, actualizaciones de inventario' },
+          { score: 4, label: 'Más de 5 tareas repetitivas de alto volumen', desc: 'Procesos administrativos estandarizados y de alto volumen' },
+        ]
+      },
+      // VIABILIDAD DE IA - Susceptibilidad: Lógica (Q19)
+      {
+        id: 19, dim: 'viabilidad',
+        text: 'Las tareas siguen reglas fijas "Si A entonces B" (vs. Juicio emocional)',
+        hint: 'Evalúe si los procesos tienen reglas claras y predecibles.',
+        options: [
+          { score: 1, label: 'Las decisiones son principalmente judgment calls', desc: 'Cada situación se evalúa caso por caso emocionalmente' },
+          { score: 2, label: 'Algunas reglas, pero con muchas excepciones', desc: 'Hay procesos definidos pero sujetos a criterio personal' },
+          { score: 3, label: 'Reglas claras en la mayoría de los casos', desc: 'Se aplica "si A entonces B" en situaciones rutinarias' },
+          { score: 4, label: 'Procesos 100% basados en reglas lógicas documentadas', desc: 'Decisiones automatizables sin ambigüedad' },
+        ]
+      },
+      // VIABILIDAD DE IA - Susceptibilidad: Documentos (Q20)
+      {
+        id: 20, dim: 'viabilidad',
+        text: '¿Volumen alto de correos, contratos o facturas que requieren síntesis?',
+        hint: 'Piense en documentos que requieren leer, resumir o extraer información clave.',
+        options: [
+          { score: 1, label: 'Volumen muy bajo de documentos', desc: 'Pocos emails, contratos simples, sin facturación masiva' },
+          { score: 2, label: 'Volumen moderado sin síntesis automatizada', desc: 'Se revisan manualmente uno por uno' },
+          { score: 3, label: 'Alto volumen con algo de automatización', desc: 'Algunos filtros o reglas pero aún requiere revisión manual' },
+          { score: 4, label: 'Alto volumen con síntesis automatizada', desc: 'IA que resume, extrae y clasifica documentos automáticamente' },
+        ]
+      },
+      // VIABILIDAD DE IA - Susceptibilidad: Predicción (Q21)
+      {
+        id: 21, dim: 'viabilidad',
+        text: '¿Necesidad de analizar tendencias pasadas para proyectar resultados?',
+        hint: 'Considere si necesita saber qué pasará basándose en datos históricos.',
+        options: [
+          { score: 1, label: 'No se hacen proyecciones, se reacciona', desc: 'El negocio opera sin forecasts ni modelos predictivos' },
+          { score: 2, label: 'Proyecciones manuales en Excel', desc: 'Se hacen cálculos básicos sin herramientas predictivas' },
+          { score: 3, label: 'Análisis de tendencias con herramientas de BI', desc: 'Dashboards con datos históricos para análisis manual' },
+          { score: 4, label: 'Proyecciones automatizadas con IA', desc: 'Modelos predictivos que anticipan demanda, ventas, riesgos' },
+        ]
+      },
+      // VIABILIDAD DE IA - Susceptibilidad: Control (Q22)
+      {
+        id: 22, dim: 'viabilidad',
+        text: '¿Qué tan lista está su empresa para que la Inteligencia Artificial sea el motor que mueva su operación y no solo un accesorio ocasional?',
+        hint: 'Considere qué tan integrados y ordenados están sus procesos para escalar con IA.',
+        options: [
+          { score: 1, label: 'Sin Rumbo', desc: 'No tenemos un plan; cada quien usa la IA como puede o quiere, sin orden ni supervisión.' },
+          { score: 2, label: 'Con Intención, sin Sistema', desc: 'Queremos implementarla, pero nuestros procesos actuales son desordenados y la IA solo causaría más caos.' },
+          { score: 3, label: 'Listos para el Cambio', desc: 'Tenemos orden en el negocio y estamos dispuestos a asignar equipo y presupuesto para que la IA tome el control de las tareas críticas.' },
+          { score: 4, label: 'Madurez Operativa', desc: 'Nuestra estructura es sólida y estamos listos para que la IA se convierta en la columna vertebral de nuestra rentabilidad hoy mismo.' },
+        ]
+      },
+    ];
+
+    // ─── LEVELS ───
+    const levels = [
+      {
+        min: 0, max: 22, id: 'critico', label: 'Nivel Crítico', color: '#C0392B', bg: '#FDECEA', emoji: '🔴',
+        title: 'Su negocio opera sin IA: riesgo de obsolescencia',
+        subtitle: 'La brecha competitiva crece cada día. Sus competidores que ya adoptan IA operan más rápido, con menos costo y mejor experiencia al cliente. El momento de actuar es ahora.'
+      },
+      {
+        min: 23, max: 44, id: 'inicial', label: 'Nivel Inicial', color: '#E05C2D', bg: '#FEF0E8', emoji: '🟠',
+        title: 'Primeros pasos hacia la transformación digital',
+        subtitle: 'Tiene conciencia del potencial de la IA pero su adopción es incipiente. Con las acciones correctas en los próximos 90 días puede avanzar significativamente.'
+      },
+      {
+        min: 45, max: 57, id: 'intermedio', label: 'Nivel Intermedio', color: '#E8A838', bg: '#FEF3E2', emoji: '🟡',
+        title: 'Adopción en construcción — está en la mitad del camino',
+        subtitle: 'Ha iniciado la integración de IA en algunas áreas. El desafío ahora es escalar y conectar esas iniciativas en una estrategia coherente de alto impacto.'
+      },
+      {
+        min: 58, max: 75, id: 'avanzado', label: 'Nivel Avanzado', color: '#2D6A4F', bg: '#E8F5EE', emoji: '🟢',
+        title: 'Empresa impulsada por datos y IA — ventaja competitiva',
+        subtitle: 'Su empresa ha integrado IA de forma significativa. El siguiente nivel es optimización continua, formación del talento y monetización del diferencial tecnológico.'
+      },
+      {
+        min: 76, max: 88, id: 'lider', label: 'Nivel Líder', color: '#1A3A6B', bg: '#E8EDF5', emoji: '🏆',
+        title: 'Organización de alto rendimiento algorítmico',
+        subtitle: 'Su empresa está entre el top 5% de adopción de IA. El reto es mantener el liderazgo, innovar en IA generativa y convertir su ventaja en activos escalables.'
+      },
+    ];
+
+    // ─── RECOMMENDATIONS LIBRARY ───
+    const recLibrary = {
+      ops: [
+        { threshold: 0.5, priority: 'high', title: 'Automatice sus 3 tareas más repetitivas esta semana', text: 'Identifique los procesos que su equipo repite a diario (reportes, emails de seguimiento, actualizaciones de inventario) y use Make o n8n para automatizarlos sin programar.', action: 'Instale Make.com y conecte su correo + hoja de cálculo en 2 horas.' },
+        { threshold: 0.7, priority: 'med', title: 'Integre Copilot o ChatGPT en la rutina de su equipo', text: 'Defina 3 casos de uso concretos donde la IA reduzca tiempo: redacción de emails, generación de reportes, análisis de datos. Cree prompts estándar para su industria.', action: 'Organice una sesión de 1 hora con su equipo para adoptar la herramienta.' },
+      ],
+      supply: [
+        { threshold: 0.5, priority: 'high', title: 'Centralice sus datos de inventario antes de agregar IA', text: 'Sin datos limpios no hay predicción posible. Migre sus registros de inventario a un sistema único (aunque sea una hoja de Google bien estructurada) como primer paso.', action: 'Defina en esta semana qué herramienta centraliza su inventario.' },
+        { threshold: 0.7, priority: 'med', title: 'Active alertas predictivas en su sistema de stock', text: 'Implemente reglas simples: alerta cuando el inventario baje del mínimo histórico, reorden automático, notificación de cuellos de botella con proveedores.', action: 'Configure alertas automáticas en su ERP o con Zapier/Make.' },
+      ],
+      decisions: [
+        { threshold: 0.5, priority: 'high', title: 'Cree su primer dashboard de métricas clave del negocio', text: 'Sin datos no hay decisiones inteligentes. Defina sus 5 KPIs más importantes y construya un dashboard semanal automatizado que llegue a su correo cada lunes.', action: 'Use Google Looker Studio (gratis) para conectar sus datos hoy.' },
+        { threshold: 0.7, priority: 'med', title: 'Implemente análisis de tendencias con IA', text: 'Use ChatGPT o herramientas de BI con IA para identificar patrones en sus datos de ventas: estacionalidad, productos estrella, clientes de alto valor.', action: 'Exporte sus ventas de los últimos 12 meses y analícelas con IA esta semana.' },
+      ],
+      cx: [
+        { threshold: 0.5, priority: 'high', title: 'Implemente atención automática fuera de horario', text: 'El 40% de las consultas llegan fuera del horario laboral. Un chatbot básico con IA conversacional puede resolver el 70% de estas sin intervención humana.', action: 'Configure un chatbot con WhatsApp Business API o Tidio en 48 horas.' },
+        { threshold: 0.7, priority: 'med', title: 'Segmente y personalice sus comunicaciones con IA', text: 'Implemente emails y mensajes personalizados basados en el historial de compras de cada cliente. La personalización aumenta la tasa de conversión en promedio un 30%.', action: 'Active segmentación automática en su CRM o herramienta de email marketing.' },
+      ],
+      data: [
+        { threshold: 0.5, priority: 'high', title: 'Audite y centralice sus datos: es la base de todo', text: 'La IA es tan buena como los datos que la alimentan. Realice un inventario de todas sus fuentes de datos y defina una arquitectura de datos simple pero consistente.', action: 'Dedique 1 día a mapear todas sus fuentes de datos y unificarlas.' },
+        { threshold: 0.7, priority: 'med', title: 'Establezca una política básica de ciberseguridad', text: 'La seguridad de los datos de sus clientes es un activo estratégico. Implemente autenticación de dos factores, backups automáticos y contraseñas seguras en todos los sistemas.', action: 'Implemente estas 3 medidas de seguridad en los próximos 7 días.' },
+      ],
+      talent: [
+        { threshold: 0.5, priority: 'high', title: 'Diseñe un programa de adopción de IA para su equipo', text: 'La tecnología sin personas que la usen es inútil. Cree un plan de capacitación de 4 semanas: sesiones semanales de 1 hora con casos prácticos de su industria.', action: 'Contacte a Arkova para un workshop de IA personalizado para su equipo.' },
+        { threshold: 0.7, priority: 'low', title: 'Cree su hoja de ruta de IA para los próximos 12 meses', text: 'Documente su estrategia de adopción de IA: qué áreas priorizar, qué herramientas adoptar, qué KPIs medir, con qué presupuesto y quién lidera cada iniciativa.', action: 'Agende una sesión estratégica con Arkova para co-diseñar su roadmap.' },
+      ],
+      viabilidad: [
+        { threshold: 0.5, priority: 'high', title: 'Centralice sus datos en la nube antes de implementar IA', text: 'La IA necesita datos organizados y accesibles. Migre su información a un sistema centralizado (Google Drive, Notion, CRM) para tener una base sólida.', action: 'Elija una herramienta de gestión de datos y migre la información operativa en 30 días.' },
+        { threshold: 0.7, priority: 'med', title: 'Documente procesos y reglas de decisión', text: 'La IA funciona mejor con procesos claros y lógicos. Documente los flujos de trabajo y las reglas de negocio antes de automatizar.', action: 'Cree un mapa de procesos documentados para identificar最适合 automatizar áreas.' },
+        { threshold: 0.9, priority: 'low', title: 'Implemente validación humana en loop de IA', text: 'Para proyectos de IA avanzados, establezca puntos de control humano donde los resultados puedan verificarse rápidamente.', action: 'Diseñe flujos de IA con revisión humana en puntos críticos del proceso.' },
+      ],
+    };
+
+    // ─── STATE ───
+    let answers = {};
+    let currentQ = 0;
+    let dimScoresGlobal = {};
+    let levelGlobal = {};
+
+    // ─── BUILD QUESTION UI ───
+    function buildQuestions() {
+      const container = document.getElementById('questions-container');
+      questions.forEach((q, idx) => {
+        const dim = dimensions.find(d => d.id === q.dim);
+        const div = document.createElement('div');
+        div.id = `q-screen-${idx}`;
+        div.className = 'question-screen';
+        div.innerHTML = `
+      <div class="q-card">
+        <div class="q-number">${String(idx + 1).padStart(2, '0')}</div>
+        <div class="q-meta">
+          <span class="q-dimension">${dim.icon} ${dim.label}</span>
+          <span class="q-sep">·</span>
+          <span class="q-counter">Pregunta ${idx + 1} de ${questions.length}</span>
+        </div>
+        <div class="q-text">${q.text}</div>
+        <div class="q-hint">${q.hint}</div>
+        <div class="options-grid" id="opts-${idx}">
+          ${q.options.map((opt, oi) => `
+            <button class="opt-btn" onclick="selectAnswer(${idx}, ${opt.score}, ${oi})" id="opt-${idx}-${oi}">
+              <span class="opt-score">${opt.score}</span>
+              <div class="opt-content">
+                <div class="opt-label">${opt.label}</div>
+                <div class="opt-desc">${opt.desc}</div>
+              </div>
+            </button>`).join('')}
+        </div>
+      </div>
+      <div class="nav-row">
+        ${idx > 0 ? `<button class="btn-prev" onclick="goToPrev(${idx})">← Anterior</button>` : '<span></span>'}
+        ${idx < questions.length - 1
+            ? `<button class="btn-next" id="btn-next-${idx}" onclick="goToNext(${idx})" disabled>Siguiente →</button>`
+            : `<button class="btn-results" id="btn-next-${idx}" onclick="showResults()" style="display:none">Ver mi Diagnóstico →</button>`}
+      </div>
+    `;
+        container.appendChild(div);
+      });
+    }
+
+    function startAssessment() {
+      document.getElementById('screen-intro').style.display = 'none';
+      document.getElementById('progress-wrap').style.display = 'flex';
+      showQuestion(0);
+    }
+
+    function showQuestion(idx) {
+      document.querySelectorAll('.question-screen').forEach(s => s.classList.remove('active'));
+      const s = document.getElementById(`q-screen-${idx}`);
+      s.classList.add('active');
+      // Restore selected state
+      if (answers[idx] !== undefined) {
+        questions[idx].options.forEach((_, oi) => {
+          const btn = document.getElementById(`opt-${idx}-${oi}`);
+          if (btn) btn.classList.toggle('selected', questions[idx].options[oi].score === answers[idx]);
+        });
+        const nextBtn = document.getElementById(`btn-next-${idx}`);
+        if (nextBtn) { nextBtn.disabled = false; nextBtn.style.display = ''; }
+      }
+      updateProgress(idx);
+      currentQ = idx;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function selectAnswer(qIdx, score, optIdx) {
+      answers[qIdx] = score;
+      questions[qIdx].options.forEach((_, oi) => {
+        const btn = document.getElementById(`opt-${qIdx}-${oi}`);
+        if (btn) btn.classList.toggle('selected', oi === optIdx);
+      });
+      const nextBtn = document.getElementById(`btn-next-${qIdx}`);
+      if (nextBtn) { nextBtn.disabled = false; nextBtn.style.display = ''; }
+    }
+
+    function goToNext(idx) {
+      if (answers[idx] === undefined) return;
+      showQuestion(idx + 1);
+    }
+
+    function goToPrev(idx) {
+      if (idx > 0) showQuestion(idx - 1);
+    }
+
+    function updateProgress(idx) {
+      const answered = Object.keys(answers).length;
+      const pct = (answered / questions.length) * 100;
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-count').textContent = `${answered} / ${questions.length}`;
+    }
+
+    function showResults() {
+      document.querySelectorAll('.question-screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('progress-wrap').style.display = 'none';
+
+      const dimScores = {};
+      dimensions.forEach(d => { dimScores[d.id] = 0; });
+      questions.forEach((q, idx) => {
+        if (answers[idx] !== undefined) dimScores[q.dim] += answers[idx];
+      });
+      const totalScore = Object.values(dimScores).reduce((a, b) => a + b, 0);
+      const maxScore = 88;
+      const level = levels.find(l => totalScore >= l.min && totalScore <= l.max) || levels[0];
+
+      dimScoresGlobal = dimScores;
+      levelGlobal = level;
+
+      const rs = document.getElementById('screen-results');
+      rs.classList.add('active');
+
+      document.getElementById('score-number').textContent = totalScore;
+      document.getElementById('score-pct').textContent = `/ ${maxScore} pts`;
+
+      const circumference = 2 * Math.PI * 68;
+      const pct = totalScore / maxScore;
+      setTimeout(() => {
+        const fill = document.getElementById('ring-fill');
+        if (fill) {
+          fill.style.stroke = level.color;
+          fill.style.strokeDashoffset = circumference * (1 - pct);
+        }
+      }, 100);
+
+      const badge = document.getElementById('level-badge');
+      if (badge) {
+        badge.textContent = level.emoji + ' ' + level.label;
+        badge.style.background = level.bg;
+        badge.style.color = level.color;
+      }
+      document.getElementById('results-title').textContent = level.title;
+      document.getElementById('results-subtitle').textContent = level.subtitle;
+
+      const dimInterpretations = {
+        ops: { low: 'Operaciones mayormente manuales. Alto potencial para ahorrar horas de trabajo automatizando flujos diarios.', med: 'Automatización parcial. Existen herramientas digitales pero no están integradas plenamente con IA.', high: 'Operaciones eficientes y automatizadas. Su equipo utiliza la tecnología para escalar el trabajo operativo.' },
+        supply: { low: 'Gestión de inventario reactiva. Existe riesgo de quiebres de stock y falta de visibilidad en tiempo real.', med: 'Visibilidad parcial de la cadena. Recomendable integrar predicción algorítmica para anticipar la demanda.', high: 'Cadena de suministro predictiva. Buena visibilidad y capacidad de reacción ante disrupciones.' },
+        decisions: { low: 'Decisiones basadas en intuición o datos desactualizados. Alta dependencia del juicio personal.', med: 'Uso de dashboards y métricas, pero el análisis predictivo automatizado aún es limitado.', high: 'Cultura Data-Driven. Decisiones ágiles basadas en análisis predictivo y modelos de IA.' },
+        cx: { low: 'Atención tradicional y genérica. Se pierden oportunidades de venta fuera del horario comercial.', med: 'Adopción de bots básicos o segmentación simple, pero falta hiper-personalización.', high: 'Experiencia del cliente hiper-personalizada 24/7. Excelente uso de IA conversacional y predictiva.' },
+        data: { low: 'Información en silos, desorganizada o local. Es urgente centralizar datos en la nube antes de aplicar IA.', med: 'Datos centralizados pero con medidas de seguridad o gobierno de datos que pueden mejorar.', high: 'Arquitectura de datos robusta y segura, lista para alimentar modelos avanzados de IA.' },
+        talent: { low: 'Resistencia o desconocimiento sobre IA en el equipo. Es crítica la capacitación formal.', med: 'Curiosidad y uso aislados de herramientas. Faltan lineamientos estratégicos y adopción transversal.', high: 'Equipo empoderado y capacitado. Existe una estrategia clara de adopción tecnológica.' },
+        viabilidad: { low: 'Baja madurez digital. Priorice la digitalización básica (nube, procesos) antes de proyectos complejos de IA.', med: 'Condiciones estructurales aceptables. Inicie con pilotos de IA en tareas muy repetitivas y basadas en reglas.', high: 'Alta preparación. Excelente escenario organizacional y técnico para proyectos de IA de alto impacto.' }
+      };
+
+      const clamp = (val) => Math.max(12, Math.min(88, val));
+      const getViabilidadResult = (pct) => {
+        if (pct <= 0.4) return { label: 'VIABILIDAD BAJA', text: 'Su empresa tiene bases digitales limitadas. La implementación de IA requiere primero fortalecer la madurez digital (datos en la nube, procesos documentados, herramientas de gestión). Inicie con pequeños proyectos piloto que demuestren valor antes de escalar.' };
+        if (pct <= 0.65) return { label: 'VIABILIDAD MEDIA', text: 'Su empresa tiene condiciones aceptables para implementar IA. Hay datos y procesos que pueden aprovechar herramientas de IA. Se recomienda iniciar con casos de uso específicos en áreas de alta repetitividad y reglas claras.' };
+        return { label: 'VIABILIDAD ALTA', text: '¡Excelente! Su empresa tiene la madurez digital y susceptibilidad necesarias para implementar IA con alto impacto. El próximo paso es definir proyectos específicos y comenzar con un piloto enfocado en generar resultados medibles.' };
+      };
+      
+      const generateDimCard = (dim, score, answers, questions, dimInterpretations) => {
+        const pctDim = score / dim.maxPts;
+        const barColor = pctDim <= 0.25 ? '#C0392B' : pctDim <= 0.45 ? '#E05C2D' : pctDim <= 0.65 ? '#E8A838' : pctDim <= 0.85 ? '#7BC67E' : '#2D6A4F';
+        const dimQs = questions.filter(q => q.dim === dim.id);
+        let answersHtml = '';
+        dimQs.forEach(q => {
+          const qIdx = questions.indexOf(q);
+          const option = q.options.find(o => o.score === answers[qIdx]);
+          answersHtml += `<div class="dim-ans-item"><div class="dim-ans-q">${q.text}</div><div class="dim-ans-a">${option ? option.label : 'Sin responder'}</div></div>`;
+        });
+        const interpretation = dimInterpretations[dim.id][pctDim <= 0.45 ? 'low' : pctDim <= 0.75 ? 'med' : 'high'];
+        return `
+          <div class="dim-card">
+            <div class="dim-row">
+              <div class="dim-row-icon">${dim.icon}</div>
+              <div class="dim-row-info">
+                <div class="dim-row-name">${dim.label}</div>
+                <div class="dim-row-bar-track"><div class="dim-row-bar-fill" style="width:0%;background:${barColor}" data-w="${Math.round(pctDim * 100)}"></div></div>
+              </div>
+              <div><div class="dim-row-score">${score}</div><div class="dim-row-max">/ ${dim.maxPts}</div></div>
+            </div>
+            <div class="dim-answers">${answersHtml}</div>
+            <div class="dim-interpretation"><strong>💡 Interpretación:</strong> ${interpretation}</div>
+          </div>
+        `;
+      };
+
+      const rawPoints = dimensions.filter(d => d.id !== 'viabilidad').map(dim => {
+        const scorePct = Math.round((dimScores[dim.id] / dim.maxPts) * 100);
+        const yValues = { ops: 85, supply: 72, decisions: 92, cx: 78, data: 95, talent: 65 };
+        return { id: dim.id, label: dim.label, x: scorePct, y: yValues[dim.id], pct: scorePct };
+      });
+      const scatterPoints = [];
+      rawPoints.forEach(p => {
+        let attempts = 0;
+        while(attempts < 15) {
+          const conflict = scatterPoints.find(fp => Math.abs(fp.x - p.x) < 10 && Math.abs(fp.y - p.y) < 10);
+          if (conflict) { p.y -= 7; p.x += 4; attempts++; } else break;
+        }
+        scatterPoints.push(p);
+      });
+
+      let flowHtml = `
+        <div class="section-title">Matriz de Prioridad de IA</div>
+        <div class="section-sub">Priorización de áreas basada en impacto estratégico vs. nivel de adopción de IA.</div>
+        <div class="scatter-wrapper">
+          <div class="scatter-y-axis">Impacto Estratégico</div>
+          <div class="scatter-main">
+            <div class="scatter-box" style="background: radial-gradient(ellipse at top left, #C0392B 15%, #E05C2D 45%, #E8A838 75%, #2D6A4F 100%);">
+              <div class="corner-label cl-tl">Prioridad Alta</div><div class="corner-label cl-br">Prioridad Baja</div>
+              ${scatterPoints.map(p => `<div class="scatter-point" style="left: ${clamp(p.x)}%; bottom: ${clamp(p.y)}%;"><span>${p.label}<br><strong>${p.pct}%</strong></span></div>`).join('')}
+            </div>
+            <div class="scatter-x-axis">Nivel de Adopción Actual</div>
+          </div>
+        </div>
+        <div class="section-title">Detalle de Respuestas por Dimensión</div>
+        <div class="dim-details">
+          ${dimensions.filter(d => d.id !== 'viabilidad').sort((a,b) => (dimScores[a.id]/a.maxPts) - (dimScores[b.id]/b.maxPts)).map(d => generateDimCard(d, dimScores[d.id], answers, questions, dimInterpretations)).join('')}
+        </div>
+      `;
+
+      const madurezPts = [12, 13, 14, 15, 16].reduce((sum, i) => sum + (answers[i] || 0), 0);
+      const suscOps = [17, 21].reduce((sum, i) => sum + (answers[i] || 0), 0);
+      const suscLogic = [18, 20].reduce((sum, i) => sum + (answers[i] || 0), 0);
+      const suscDocs = [19].reduce((sum, i) => sum + (answers[i] || 0), 0);
+      const viaTotal = madurezPts + suscOps + suscLogic + suscDocs;
+
+      flowHtml += `
+        <div class="section-title">Viabilidad de IA</div>
+        <div class="section-sub">Evaluación de las condiciones actuales para implementar proyectos de IA.</div>
+        <div class="scatter-wrapper">
+          <div class="scatter-y-axis">Susceptibilidad a IA</div>
+          <div class="scatter-main">
+            <div class="scatter-box" style="background: radial-gradient(ellipse at top right, #2D6A4F 15%, #E8A838 50%, #E05C2D 75%, #C0392B 100%);">
+              <div class="corner-label cl-tr">Viabilidad Alta</div><div class="corner-label cl-bl">Viabilidad Baja</div>
+              <div class="scatter-point" style="left:${clamp((madurezPts/20)*100)}%; bottom:${clamp(((suscOps+suscLogic+suscDocs)/20)*100)}%; width:84px; height:84px; font-size:12px; border:4px solid white;"><span>Tu<br>Empresa</span></div>
+            </div>
+            <div class="scatter-x-axis">Madurez Digital</div>
+          </div>
+        </div>
+        <div class="via-stats-container">
+          <div class="via-stat-item"><div class="via-stat-label">Madurez Digital</div><div class="via-stat-value">${madurezPts} <span class="via-stat-max">/ 20</span></div><div class="via-stat-bar"><div class="via-stat-fill" style="width:0%" data-w="${(madurezPts/20)*100}"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Susc. Operaciones</div><div class="via-stat-value">${suscOps} <span class="via-stat-max">/ 8</span></div><div class="via-stat-bar"><div class="via-stat-fill" style="width:0%" data-w="${(suscOps/8)*100}"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Susc. Lógica</div><div class="via-stat-value">${suscLogic} <span class="via-stat-max">/ 8</span></div><div class="via-stat-bar"><div class="via-stat-fill" style="width:0%" data-w="${(suscLogic/8)*100}"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Susc. Documentos</div><div class="via-stat-value">${suscDocs} <span class="via-stat-max">/ 4</span></div><div class="via-stat-bar"><div class="via-stat-fill" style="width:0%" data-w="${(suscDocs/4)*100}"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Total Viabilidad</div><div class="via-stat-value" style="color:var(--rust)">${viaTotal} <span class="via-stat-max">/ 40</span></div><div class="via-stat-bar"><div class="via-stat-fill" style="width:0%;background:var(--rust)" data-w="${(viaTotal/40)*100}"></div></div></div>
+        </div>
+        <div class="via-badge-box">
+          <div class="via-badge-tag">${getViabilidadResult(viaTotal/40).label}</div>
+          <div class="via-badge-text">${getViabilidadResult(viaTotal/40).text}</div>
+        </div>
+        <div class="section-title">Detalle de Respuestas: Viabilidad</div>
+        <div class="dim-details">
+          ${generateDimCard(dimensions.find(d => d.id === 'viabilidad'), dimScores['viabilidad'], answers, questions, dimInterpretations)}
+        </div>
+      `;
+
+      document.getElementById('results-flow-container').innerHTML = flowHtml;
+
+      setTimeout(() => {
+        document.querySelectorAll('.dim-row-bar-fill, .via-stat-fill').forEach(b => {
+          if (b.dataset.w) b.style.width = b.dataset.w + '%';
+        });
+      }, 200);
+
+      // RECOMMENDATIONS
+      const recsGrid = document.getElementById('recs-grid');
+      recsGrid.innerHTML = '';
+      
+      dimensions.forEach(dim => {
+        const pctDim = dimScores[dim.id] / dim.maxPts;
+        const lib = recLibrary[dim.id] || [];
+        const applicableRecs = lib.filter(rec => pctDim <= rec.threshold);
+        
+        if (applicableRecs.length > 0) {
+          const dimGroup = document.createElement('div');
+          dimGroup.className = 'rec-dim-group';
+          dimGroup.innerHTML = `
+            <div class="rec-dim-header">
+              <span class="rec-dim-icon">${dim.icon}</span>
+              <span class="rec-dim-label">${dim.label}</span>
+            </div>
+            <div class="rec-dim-body">
+              ${applicableRecs.map(r => `<div class="rec-dim-text">${r.text}</div>`).join('')}
+            </div>
+          `;
+          recsGrid.appendChild(dimGroup);
+        }
+      });
+
+      // Show print button (Consolidated)
+      const oldBtn = document.getElementById('btn-generate-pdf-container');
+      if (oldBtn) oldBtn.remove();
+
+      const btnRow = document.createElement('div');
+      btnRow.id = 'btn-generate-pdf-container';
+      btnRow.style = 'text-align:center;margin:40px 0;display:flex;flex-direction:column;gap:16px;align-items:center;';
+      btnRow.innerHTML = `
+        <button class="btn-print" id="btn-generate-pdf" onclick="generateFullPDF()">
+          📊 Generar Reporte Completo (PDF)
+        </button>
+      `;
+      const cta = document.querySelector('.cta-strip');
+      if (cta) cta.parentNode.insertBefore(btnRow, cta);
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ─── PDF GENERATION ───
+    async function generateFullPDF() {
+      const { jsPDF } = window.jspdf;
+      const resultsScreen = document.getElementById('screen-results');
+      const btn = document.getElementById('btn-generate-pdf');
+
+      // Hide button and scroll to top for clean capture
+      if (btn) btn.style.display = 'none';
+      window.scrollTo(0,0);
+
+      try {
+        const canvas = await html2canvas(resultsScreen, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#F5F0E8',
+          logging: false,
+          windowWidth: resultsScreen.scrollWidth,
+          windowHeight: resultsScreen.scrollHeight
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // First page
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        // Subsequent pages
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
+
+        pdf.save('Reporte_Completo_Diagnostico_IA_Arkova.pdf');
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error al generar PDF. Por favor intente de nuevo.');
+      }
+
+    }
+
+    function restartAssessment() {
+      answers = {};
+      currentQ = 0;
+      const btn = document.getElementById('btn-generate-pdf');
+      if (btn) btn.style.display = 'none';
+      
+      document.getElementById('screen-results').classList.remove('active');
+      document.getElementById('screen-intro').style.display = 'block';
+      // Reset all selections
+      questions.forEach((_, idx) => {
+        questions[idx].options.forEach((_, oi) => {
+          const btn = document.getElementById(`opt-${idx}-${oi}`);
+          if (btn) btn.classList.remove('selected');
+        });
+        const nb = document.getElementById(`btn-next-${idx}`);
+        if (nb) { nb.disabled = true; nb.style.display = nb.tagName === 'BUTTON' && nb.classList.contains('btn-results') ? 'none' : ''; nb.disabled = true; }
+      });
+      document.getElementById('progress-fill').style.width = '0%';
+      document.getElementById('progress-count').textContent = '0 / 22';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ─── INIT ───
+    buildQuestions();
+  </script>
+</body>
+
+</html>
