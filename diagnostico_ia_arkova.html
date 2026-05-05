@@ -68,15 +68,12 @@
     .header {
       position: relative;
       z-index: 10;
-      background: linear-gradient(135deg, #1A1A2E 0%, #2C3E6B 100%);
+      background: linear-gradient(135deg, #1A1A1A 0%, #0D0D0D 100%);
       color: white;
-      padding: 48px 60px 40px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 40px;
+      padding: 60px 40px;
+      text-align: left;
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .header::after {
@@ -94,13 +91,11 @@
     }
 
     .header-logo-img {
-      max-width: 180px;
+      max-width: 160px;
       height: auto;
       margin-bottom: 32px;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
-      mix-blend-mode: screen; /* Hace transparente el fondo negro del logo */
+      mix-blend-mode: screen;
       opacity: 0.95;
     }
 
@@ -1559,7 +1554,7 @@
 
   <!-- ─── HEADER ─── -->
   <div class="header">
-    <div>
+    <div style="max-width: 1200px; margin: 0 auto;">
       <img src="arkova_logo.png" alt="Arkova Logo" class="header-logo-img">
       <h1 class="header-title">Índice de Adopción<br>de <span>Inteligencia Artificial</span></h1>
       <p class="header-sub">22 preguntas estratégicas para medir el nivel real de IA en su negocio.</p>
