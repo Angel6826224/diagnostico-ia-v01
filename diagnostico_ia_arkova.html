@@ -1685,13 +1685,13 @@
       // OPERACIONES (Q1, Q2)
       {
         id: 1, dim: 'ops',
-        text: '¿Qué porcentaje de sus tareas operativas diarias (facturación, reportes, agenda) se ejecutan de forma automática sin intervención humana?',
-        hint: 'Piense en procesos que hoy en día requieren que alguien los haga manualmente.',
+        text: '¿Qué proporción de las tareas que su equipo repite todos los días se realizan solas, sin que alguien tenga que hacerlas manualmente?',
+        hint: 'Ejemplos: facturación, cobros, seguimiento a clientes, reportes, citas, inventario, redes, respuesta a mensajes.<br><br>Piense en lo que su equipo hace hoy antes de mediodía: ¿cuánto de eso lo hace una herramienta sola?',
         options: [
-          { score: 1, label: 'Menos del 10%', desc: 'Casi todo se hace manualmente' },
-          { score: 2, label: '10% – 30%', desc: 'Algunas automatizaciones básicas' },
-          { score: 3, label: '30% – 60%', desc: 'Automatización moderada en marcha' },
-          { score: 4, label: 'Más del 60%', desc: 'Alta automatización operativa' },
+          { score: 1, label: 'Todo se hace a mano — nadie se salva', desc: 'Cada tarea requiere que alguien la ejecute una por una' },
+          { score: 2, label: 'Una o dos cosas van solas (un recordatorio, un reporte)', desc: 'Tenemos algún atajo pero el grueso es manual' },
+          { score: 3, label: 'Varios procesos fluyen solos — el equipo solo revisa', desc: 'Automatización parcial real en áreas clave' },
+          { score: 4, label: 'Casi todo opera solo — el equipo supervisa, no ejecuta', desc: 'Alta automatización: el negocio corre aunque nadie esté' },
         ]
       },
       {
