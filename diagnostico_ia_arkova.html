@@ -2307,34 +2307,53 @@
 
     // ─── PDF GENERATION ───
     async function generateFullPDF() {
-      const { jsPDF } = window.jspdf;
+      const btn = document.getElementById('btn-generate-pdf');
       const resultsScreen = document.getElementById('screen-results');
+
+      if (!window.jspdf || !window.html2canvas) {
+        alert('Las librerías de PDF aún no se han cargado. Por favor, espere un momento e intente de nuevo.');
+        return;
+      }
+
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '⌛ Generando Reporte...';
+        btn.innerHTML = '⌛ Preparando Reporte...';
         btn.style.opacity = '0.7';
       }
       
       window.scrollTo(0,0);
 
       try {
+        console.log('Iniciando captura de pantalla...');
+        if (btn) btn.innerHTML = '📸 Capturando diseño...';
+
         const canvas = await html2canvas(resultsScreen, {
           scale: 2,
           useCORS: true,
           backgroundColor: '#F5F0E8',
-          logging: false,
+          logging: true,
+          allowTaint: true,
           windowWidth: resultsScreen.scrollWidth,
           windowHeight: resultsScreen.scrollHeight,
           onclone: (clonedDoc) => {
-            // Ensure things that shouldn't be in PDF are hidden in clone
-            const clonedBtn = clonedDoc.getElementById('btn-generate-pdf');
+            const clonedBtn = clonedDoc.getElementById('btn-generate-pdf-container');
             if (clonedBtn) clonedBtn.style.display = 'none';
             const restartBtn = clonedDoc.querySelector('.btn-restart');
             if (restartBtn) restartBtn.style.display = 'none';
+            
+            // html2canvas doesn't support backdrop-filter and can crash or fail
+            const glassElements = clonedDoc.querySelectorAll('*');
+            glassElements.forEach(el => {
+              el.style.backdropFilter = 'none';
+              el.style.webkitBackdropFilter = 'none';
+            });
           }
         });
 
+        if (btn) btn.innerHTML = '📄 Generando PDF...';
+
         const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -2358,17 +2377,15 @@
 
         pdf.save('Reporte_Completo_Diagnostico_IA_Arkova.pdf');
       } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert('Error al generar PDF. Por favor intente de nuevo.');
+        console.error('Error en PDF:', error);
+        alert('Hubo un error al generar el PDF: ' + error.message);
       } finally {
         if (btn) {
           btn.disabled = false;
           btn.innerHTML = '📊 Generar Reporte Completo (PDF)';
           btn.style.opacity = '1';
-          btn.style.display = 'block';
         }
       }
-
     }
 
     function restartAssessment() {
