@@ -206,16 +206,26 @@
     .dim-interpretation { padding: 24px 30px; background: rgba(45, 91, 255, 0.1); font-size: 0.95rem; border-top: 1px solid var(--border); }
 
     /* ─── VIABILIDAD STATS ─── */
-    .via-stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 32px 0; }
-    .via-stat-item { background: var(--surface-light); padding: 24px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-    .via-stat-label { font-size: 0.7rem; text-transform: uppercase; font-weight: 900; color: var(--text-dim); margin-bottom: 12px; }
-    .via-stat-value { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
-    .via-stat-bar { height: 4px; background: rgba(255,255,255,0.05); }
+    .via-stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 32px 0; }
+    .via-stat-item { background: var(--surface-light); padding: 20px; border-radius: 12px; border: 1px solid var(--border); text-align: left; }
+    .via-stat-label { font-size: 0.65rem; text-transform: uppercase; font-weight: 900; color: var(--text-dim); margin-bottom: 8px; }
+    .via-stat-value { font-size: 1.25rem; font-weight: 900; margin-bottom: 8px; display: block; }
+    .via-stat-bar { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
     .via-stat-fill { height: 100%; background: var(--primary); transition: width 1s ease; }
 
-    .via-badge-box { background: var(--primary); color: white; padding: 40px; border-radius: 16px; text-align: center; margin: 40px 0; box-shadow: 0 20px 40px var(--primary-glow); }
-    .via-badge-tag { font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 16px; opacity: 0.8; }
-    .via-badge-text { font-size: 1.25rem; font-weight: 700; line-height: 1.4; }
+    /* ─── SEMAFORO ─── */
+    .semaforo-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 40px 0; }
+    .semaforo-card { background: var(--surface-light); padding: 30px; border-radius: 16px; border: 1px solid var(--border); position: relative; }
+    .semaforo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+    .semaforo-title { font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: var(--text-dim); }
+    .semaforo-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 900; background: rgba(255,255,255,0.05); }
+    .semaforo-value { font-size: 42px; font-weight: 900; color: var(--primary); display: block; margin-bottom: 4px; }
+    .semaforo-desc { font-size: 0.85rem; color: var(--text-dim); }
+
+    .semaforo-indicator { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+    .semaforo-dot { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 20px currentColor; }
+    .semaforo-status { font-weight: 900; font-size: 1.1rem; }
+    .semaforo-score-text { font-size: 0.8rem; opacity: 0.7; }
 
     /* ─── RECS ─── */
     .recs-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -340,47 +350,71 @@
     ];
 
     const questions = [
-      { id: 1, dim: 'ops', text: '¿Qué proporción de sus operaciones diarias (facturación, reportes, agenda) se realizan sin intervención manual del equipo?', options: [{ score: 1, label: 'Ninguna — todo lo hace alguien del equipo' }, { score: 2, label: 'Menos de la mitad — tenemos algunos atajos' }, { score: 3, label: 'Más de la mitad — fluyen solos muchos procesos' }, { score: 4, label: 'Casi todo — el equipo solo supervisa' }] },
-      { id: 2, dim: 'ops', text: '¿Cómo usa actualmente su equipo herramientas de IA en sus procesos de trabajo?', hint: 'No solo "la he probado", sino que está activa en procesos reales.', options: [{ score: 1, label: 'No la hemos probado aún', desc: 'Aún no hemos iniciado' }, { score: 2, label: 'La uso yo solo', desc: 'Uso individual, no corporativo' }, { score: 3, label: 'Algunos la usan pero sin método', desc: 'Adopción espontánea' }, { score: 4, label: 'Está integrada en flujos diarios', desc: 'IA embebida en la cultura' }] },
-      { id: 3, dim: 'supply', text: '¿Cómo sabe cuándo y cuánto producto o material debe pedir?', hint: 'Piense en la última vez que necesitó surtirse.', options: [{ score: 1, label: 'Cuando se nos acaba', desc: 'Reaccionamos al momento' }, { score: 2, label: 'Registro en Excel o libreta', desc: 'Revisamos manualmente' }, { score: 3, label: 'Sistema que avisa stock mínimo', desc: 'Software que nos alerta' }, { score: 4, label: 'Proyecta cuánto pedir y cuándo', desc: 'Anticipa la demanda' }] },
-      { id: 4, dim: 'supply', text: 'Si un proveedor le falla, ¿cuándo se entera usted y cómo reacciona?', hint: '¿Lo supo antes de que afectara a sus clientes?', options: [{ score: 1, label: 'Cuando el cliente se queja', desc: 'Reacción tardía' }, { score: 2, label: 'Proveedor me avisa', desc: 'Dependo de la llamada' }, { score: 3, label: 'Revisión periódica', desc: 'Visibilidad no automática' }, { score: 4, label: 'Alertas automáticas', desc: 'Detección antes del impacto' }] },
-      { id: 5, dim: 'decisions', text: 'Cuando toma una decisión importante, ¿cuál es su fuente de información?', hint: 'Piense en su última decisión importante.', options: [{ score: 1, label: 'Experiencia e instinto', desc: 'Juicio personal' }, { score: 2, label: 'Reportes mensuales', desc: 'Análisis estático' }, { score: 3, label: 'Dashboard en vivo', desc: 'Visualización real' }, { score: 4, label: 'Proyecciones de IA', desc: 'Anticipación de escenarios' }] },
-      { id: 6, dim: 'decisions', text: '¿Con qué frecuencia analiza sus datos para identificar mejoras?', hint: 'Analizar qué vender más, a quién contactar, etc.', options: [{ score: 1, label: 'Nunca', desc: 'Sin cultura de datos' }, { score: 2, label: 'A veces, por problemas', desc: 'Análisis reactivo' }, { score: 3, label: 'Reuniones mensuales', desc: 'Estructura periódica' }, { score: 4, label: 'Alertas automáticas', desc: 'Monitoreo proactivo' }] },
-      { id: 7, dim: 'cx', text: 'Si un cliente le escribe fuera de horario, ¿qué sucede?', hint: 'Dudas, quejas o seguimiento de pedidos.', options: [{ score: 1, label: 'Nada hasta el día hábil', desc: 'Disponibilidad limitada' }, { score: 2, label: 'Mensaje automático simple', desc: 'Respuesta de cortesía' }, { score: 3, label: 'Bot de preguntas frecuentes', desc: 'Reglas fijas' }, { score: 4, label: 'Asistente IA resolutivo', desc: 'Soporte inteligente 24/7' }] },
-      { id: 8, dim: 'cx', text: '¿Qué tan adaptado es el mensaje al contactar a sus clientes?', hint: 'Emails, ofertas, recordatorios.', options: [{ score: 1, label: 'Genérico para todos', desc: 'Sin segmentación' }, { score: 2, label: 'Por tipo de cliente', desc: 'Segmentación básica' }, { score: 3, label: 'Basado en compras previas', desc: 'Personalización transaccional' }, { score: 4, label: 'Hiper-personalización IA', desc: 'Dinámico y predictivo' }] },
-      { id: 9, dim: 'data', text: '¿Cuánto tiempo le toma tener un reporte de 6 meses?', hint: '¿Están accesibles y limpios los datos?', options: [{ score: 1, label: 'Horas o días', desc: 'Datos dispersos' }, { score: 2, label: '30 minutos (Excel)', desc: 'Trabajo manual' }, { score: 3, label: '5 minutos (Sistema)', desc: 'Descarga directa' }, { score: 4, label: 'Automático (Dashboard)', desc: 'Actualizado siempre' }] },
-      { id: 10, dim: 'data', text: '¿Tiene implementadas medidas de ciberseguridad?', hint: 'Backups, accesos controlados, políticas.', options: [{ score: 1, label: 'Casi ninguna', desc: 'Vulnerabilidad alta' }, { score: 2, label: 'Básicas (Antivirus)', desc: 'Protección mínima' }, { score: 3, label: 'Políticas y herramientas', desc: 'Proceso establecido' }, { score: 4, label: 'Avanzada y auditorías', desc: 'Cumplimiento continuo' }] },
-      { id: 11, dim: 'talent', text: '¿Qué frecuencia usa su equipo directivo la IA?', hint: '¿Es parte de su rutina diaria?', options: [{ score: 1, label: 'No la usan', desc: 'Resistencia o desconocimiento' }, { score: 2, label: 'Probada ocasionalmente', desc: 'Sin adopción real' }, { score: 3, label: 'Uso diario simple', desc: 'Crecimiento cotidiano' }, { score: 4, label: 'Uso con capacitación formal', desc: 'Cultura instalada' }] },
-      { id: 12, dim: 'talent', text: '¿Tiene un plan con responsables y presupuesto para IA?', hint: 'Un plan documentado para los próximos 12 meses.', options: [{ score: 1, label: 'No existe', desc: 'Fuera de la agenda' }, { score: 2, label: 'Solo mencionado', desc: 'Sin estructura' }, { score: 3, label: 'Proyectos piloto aislados', desc: 'Sin visión global' }, { score: 4, label: 'Plan documentado formal', desc: 'KPIs y recursos asignados' }] },
-      // VIABILIDAD (Q13-22)
-      { id: 13, dim: 'viabilidad', text: '¿Dónde se almacena la información operativa de su negocio (ventas, clientes, inventario, reportes)?', options: [{ score: 1, label: 'En papel o archivos guardados en computadoras del negocio' }, { score: 2, label: 'En Excel u hojas de cálculo que cada quien guarda en su equipo' }, { score: 3, label: 'En parte en la nube (Drive, Dropbox) y parte en computadoras' }, { score: 4, label: 'Todo centralizado en la nube con respaldos automáticos' }] },
-      { id: 14, dim: 'viabilidad', text: '¿Su equipo tiene documentado cómo se hacen las cosas y realmente lo consulta?', options: [{ score: 1, label: 'No hay nada documentado — cada quien hace las cosas a su modo' }, { score: 2, label: 'Hay algo escrito pero nadie lo consulta' }, { score: 3, label: 'Están documentados pero no se aplican de forma consistente' }, { score: 4, label: 'Todo está documentado, actualizado y el equipo lo sigue siempre' }] },
-      { id: 15, dim: 'viabilidad', text: '¿Uso de herramientas de gestión (CRM, ERP)?', options: [{ score: 1, label: 'Sin herramientas' }, { score: 2, label: 'Solo email/Excel' }, { score: 3, label: 'Uso parcial de 1-2' }, { score: 4, label: 'Ecosistema integrado' }] },
-      { id: 16, dim: 'viabilidad', text: '¿Personal formado en digital/IA recientemente?', options: [{ score: 1, label: 'Ninguna' }, { score: 2, label: 'Individual' }, { score: 3, label: 'Algunas grupales' }, { score: 4, label: 'Programa formal' }] },
-      { id: 17, dim: 'viabilidad', text: '¿Decisiones basadas en datos en tiempo real?', options: [{ score: 1, label: 'Solo intuición' }, { score: 2, label: 'Reportes semanales' }, { score: 3, label: 'Dashboard parcial' }, { score: 4, label: 'Tiempo real total' }] },
-      { id: 18, dim: 'viabilidad', text: '¿Tareas administrativas idénticas diarias?', options: [{ score: 1, label: 'Ninguna' }, { score: 2, label: '1-2 menores' }, { score: 3, label: '3-5 significativas' }, { score: 4, label: 'Más de 5 masivas' }] },
-      { id: 19, dim: 'viabilidad', text: '¿Tareas siguen reglas fijas "Si A entonces B"?', options: [{ score: 1, label: 'Juicio emocional' }, { score: 2, label: 'Algunas reglas' }, { score: 3, label: 'Reglas en mayoría' }, { score: 4, label: '100% Lógicas' }] },
-      { id: 20, dim: 'viabilidad', text: '¿Volumen alto de documentos que requieren síntesis?', options: [{ score: 1, label: 'Muy bajo' }, { score: 2, label: 'Moderado manual' }, { score: 3, label: 'Alto parcial' }, { score: 4, label: 'Alto automatizado' }] },
-      { id: 21, dim: 'viabilidad', text: '¿Necesidad de proyectar resultados futuros?', options: [{ score: 1, label: 'No se proyecta' }, { score: 2, label: 'Manual en Excel' }, { score: 3, label: 'Tendencias en BI' }, { score: 4, label: 'Predictivo con IA' }] },
-      { id: 22, dim: 'viabilidad', text: '¿Qué tan lista está su empresa para la IA?', options: [{ score: 1, label: 'Sin Rumbo' }, { score: 2, label: 'Intención sin sistema' }, { score: 3, label: 'Listos para cambio' }, { score: 4, label: 'Madurez Operativa' }] }
+      { id: 1, dim: 'ops', text: '¿Qué proporción de sus operaciones diarias (facturación, reportes, agenda) se realizan sin intervención manual del equipo?', options: [{ score: 1, label: 'Ninguna — 100% manual' }, { score: 2, label: 'Baja — Menos del 25% automatizado' }, { score: 3, label: 'Media — Entre 25% y 75% automatizado' }, { score: 4, label: 'Alta — Más del 75% automatizado' }] },
+      { id: 2, dim: 'ops', text: '¿En qué medida se han integrado herramientas de Inteligencia Artificial en los procesos operativos de la empresa?', hint: 'Considere herramientas como asistentes, generadores de contenido o analítica avanzada.', options: [{ score: 1, label: 'Nula — No se utilizan herramientas de IA' }, { score: 2, label: 'Experimental — Uso individual y esporádico' }, { score: 3, label: 'En Proceso — Implementación en áreas específicas' }, { score: 4, label: 'Estratégica — IA integrada en flujos críticos' }] },
+      { id: 3, dim: 'supply', text: '¿Cómo se gestiona actualmente el reaprovisionamiento de inventario o suministros?', hint: 'Piense en la última vez que necesitó surtirse.', options: [{ score: 1, label: 'Reactiva — Cuando se agota el stock' }, { score: 2, label: 'Manual — Registro en Excel o bitácora' }, { score: 3, label: 'Sistemática — Software con alertas de stock mínimo' }, { score: 4, label: 'Predictiva — Proyecciones automáticas de demanda' }] },
+      { id: 4, dim: 'supply', text: '¿Cuál es el nivel de visibilidad y reacción ante posibles fallas en la cadena de suministro?', hint: '¿Puede detectar un problema antes de que afecte al cliente?', options: [{ score: 1, label: 'Bajo — Se entera por quejas o retrasos' }, { score: 2, label: 'Manual — Depende de la comunicación del proveedor' }, { score: 3, label: 'Medio — Revisión periódica de estados' }, { score: 4, label: 'Alto — Monitoreo y alertas en tiempo real' }] },
+      { id: 5, dim: 'decisions', text: '¿Cuál es la base principal para la toma de decisiones estratégicas en el negocio?', hint: 'Piense en su última decisión importante.', options: [{ score: 1, label: 'Intuición — Experiencia y juicio personal' }, { score: 2, label: 'Histórica — Reportes y estados financieros pasados' }, { score: 3, label: 'Actual — Dashboards con datos en vivo' }, { score: 4, label: 'Predictiva — Modelos de IA y escenarios futuros' }] },
+      { id: 6, dim: 'decisions', text: '¿Con qué frecuencia se analizan los datos operativos para identificar nuevas oportunidades de mercado?', hint: 'Análisis de comportamiento de clientes, tendencias, etc.', options: [{ score: 1, label: 'Nunca — No hay cultura de análisis de datos' }, { score: 2, label: 'Ocasional — Solo ante problemas específicos' }, { score: 3, label: 'Periódica — Reuniones mensuales de análisis' }, { score: 4, label: 'Continua — Sistemas de alerta y detección proactiva' }] },
+      { id: 7, dim: 'cx', text: '¿Cómo se gestionan las consultas de clientes fuera del horario comercial?', hint: 'Dudas, quejas o seguimiento de pedidos.', options: [{ score: 1, label: 'Sin atención — Se responde al siguiente día hábil' }, { score: 2, label: 'Básica — Mensaje automático de ausencia' }, { score: 3, label: 'Intermedia — Chatbot basado en reglas (FAQ)' }, { score: 4, label: 'Avanzada — Asistente IA resolutivo 24/7' }] },
+      { id: 8, dim: 'cx', text: '¿Cuál es el nivel de personalización en la comunicación con sus clientes?', hint: 'Emails, ofertas, recordatorios personalizados.', options: [{ score: 1, label: 'Genérica — Mismo mensaje para todos' }, { score: 2, label: 'Segmentada — Mensajes por tipo de cliente' }, { score: 3, label: 'Conductual — Basada en historial de compras' }, { score: 4, label: 'Hiper-personalizada — IA dinámica y predictiva' }] },
+      { id: 9, dim: 'data', text: '¿Qué tan accesible y consolidada se encuentra la información histórica de la empresa?', hint: 'Tiempo para generar un reporte de los últimos 6 meses.', options: [{ score: 1, label: 'Dificultosa — Datos dispersos y no estructurados' }, { score: 2, label: 'Lenta — Requiere procesamiento manual en Excel' }, { score: 3, label: 'Ágil — Sistemas con descarga directa de reportes' }, { score: 4, label: 'Instantánea — Dashboards automatizados en tiempo real' }] },
+      { id: 10, dim: 'data', text: '¿Cuál es el estado actual de las políticas de ciberseguridad y protección de datos?', hint: 'Backups, accesos controlados, cumplimiento legal.', options: [{ score: 1, label: 'Vulnerable — Sin medidas formales' }, { score: 2, label: 'Básica — Antivirus y contraseñas simples' }, { score: 3, label: 'Sólida — Políticas de acceso y copias de seguridad' }, { score: 4, label: 'Avanzada — Auditorías y cifrado de extremo a extremo' }] },
+      { id: 11, dim: 'talent', text: '¿Cuál es el nivel de adopción de herramientas digitales y de IA en el equipo directivo?', hint: '¿Es la IA parte de la agenda de liderazgo?', options: [{ score: 1, label: 'Nulo — Desconocimiento o resistencia al cambio' }, { score: 2, label: 'Incipiente — Se ha probado ocasionalmente' }, { score: 3, label: 'Activo — Uso cotidiano para tareas simples' }, { score: 4, label: 'Transformador — Liderazgo con formación técnica en IA' }] },
+      { id: 12, dim: 'talent', text: '¿Existe un plan estratégico formal para la implementación de IA en los próximos 12 meses?', hint: 'Incluye presupuesto, responsables y KPIs.', options: [{ score: 1, label: 'No existe — No está contemplado actualmente' }, { score: 2, label: 'Informal — Intenciones sin estructura ni recursos' }, { score: 3, label: 'Piloto — Proyectos aislados en evaluación' }, { score: 4, label: 'Formal — Estrategia documentada y financiada' }] },
+      
+      // MADUREZ DIGITAL (IMD)
+      { id: 13, dim: 'viabilidad', text: '¿Dónde se almacena actualmente la información operativa crítica del negocio?', options: [{ score: 1, label: 'Papel/Local — Archivos físicos o PCs locales' }, { score: 2, label: 'Híbrido Manual — Excel compartido por correo' }, { score: 3, label: 'Nube Básica — Drive, Dropbox sin estructura' }, { score: 4, label: 'Ecosistema Cloud — Bases de datos centralizadas' }] },
+      { id: 14, dim: 'viabilidad', text: '¿Cuál es el nivel de documentación y estandarización de sus procesos internos?', options: [{ score: 1, label: 'Nulo — Procesos basados en la memoria individual' }, { score: 2, label: 'Bajo — Documentación desactualizada o no consultada' }, { score: 3, label: 'Medio — Procesos clave documentados y seguidos' }, { score: 4, label: 'Alto — Procesos optimizados y estandarizados al 100%' }] },
+      { id: 15, dim: 'viabilidad', text: '¿Qué grado de integración tienen sus herramientas de gestión actual (CRM, ERP, etc.)?', options: [{ score: 1, label: 'Sin herramientas — Gestión manual' }, { score: 2, label: 'Fragmentado — Herramientas que no se comunican' }, { score: 3, label: 'Integrado — Flujo de datos entre áreas principales' }, { score: 4, label: 'Total — Ecosistema digital unificado' }] },
+      { id: 16, dim: 'viabilidad', text: '¿Cuenta el equipo con formación reciente en habilidades digitales o uso de IA?', options: [{ score: 1, label: 'Ninguna formación' }, { score: 2, label: 'Formación individual autodidacta' }, { score: 3, label: 'Capacitaciones grupales esporádicas' }, { score: 4, label: 'Programa de formación continua y formal' }] },
+      { id: 17, dim: 'viabilidad', text: '¿Qué tan automatizada está la captura de datos para la toma de decisiones?', options: [{ score: 1, label: 'Manual — Alguien debe recolectar y escribir los datos' }, { score: 2, label: 'Semi-automática — Exportaciones de sistemas' }, { score: 3, label: 'Automática — Los sistemas generan los datos solos' }, { score: 4, label: 'En Tiempo Real — Datos siempre listos para análisis' }] },
+      
+      // SUSCEPTIBILIDAD IA (ISI)
+      { id: 18, dim: 'viabilidad', text: '¿Qué volumen de tareas administrativas repetitivas se realizan diariamente?', options: [{ score: 1, label: 'Muy bajo' }, { score: 2, label: 'Moderado — 1 a 2 horas al día' }, { score: 3, label: 'Alto — Varias personas dedicadas a ello' }, { score: 4, label: 'Masivo — Procesos que consumen gran parte del tiempo' }] },
+      { id: 19, dim: 'viabilidad', text: '¿En qué medida estas tareas siguen reglas lógicas fijas (Si ocurre A, entonces hacer B)?', options: [{ score: 1, label: 'Subjetivas — Requieren juicio humano constante' }, { score: 2, label: 'Mixtas — Algunas reglas, mucha interpretación' }, { score: 3, label: 'Estandarizadas — Reglas claras en su mayoría' }, { score: 4, label: 'Lógicas — Procesos 100% basados en reglas' }] },
+      { id: 20, dim: 'viabilidad', text: '¿Cuál es la carga de trabajo relacionada con la síntesis o análisis de documentos extensos?', options: [{ score: 1, label: 'Nula o muy baja' }, { score: 2, label: 'Ocasional — Reportes mensuales' }, { score: 3, label: 'Frecuente — Análisis semanal de documentos' }, { score: 4, label: 'Crítica — Gran volumen de texto diario' }] },
+      { id: 21, dim: 'viabilidad', text: '¿Existe la necesidad de predecir comportamientos futuros (ventas, fallas, demanda)?', options: [{ score: 1, label: 'No es necesario' }, { score: 2, label: 'Deseable — Se hace de forma intuitiva' }, { score: 3, label: 'Importante — Se intenta con Excel' }, { score: 4, label: 'Vital — Crucial para la supervivencia del negocio' }] },
+      { id: 22, dim: 'viabilidad', text: '¿Qué tan dispuesta está la organización a delegar tareas operativas a sistemas inteligentes?', options: [{ score: 1, label: 'Resistencia total' }, { score: 2, label: 'Duda — Miedo al reemplazo o error' }, { score: 3, label: 'Apertura — Disposición a probar pilotos' }, { score: 4, label: 'Entusiasmo — Buscando activamente la automatización' }] }
     ];
 
     const levels = [
-      { min: 0, max: 22, color: '#EF4444', label: 'Nivel Crítico', title: 'Riesgo de Obsolescencia', subtitle: 'La brecha competitiva crece cada día.' },
-      { min: 23, max: 44, color: '#F97316', label: 'Nivel Inicial', title: 'Primeros Pasos', subtitle: 'Conciencia del potencial pero adopción incipiente.' },
-      { min: 45, max: 57, color: '#F59E0B', label: 'Nivel Intermedio', title: 'En Construcción', subtitle: 'Integración iniciada en áreas clave.' },
-      { min: 58, max: 75, color: '#10B981', label: 'Nivel Avanzado', title: 'Ventaja Competitiva', subtitle: 'IA como motor de eficiencia real.' },
-      { min: 76, max: 88, color: '#3B82F6', label: 'Nivel Líder', title: 'Líder Digital', subtitle: 'Organización de alto rendimiento impulsada por algoritmos.' }
+      { min: 0, max: 22, color: '#EF4444', label: 'Nivel Crítico', title: 'Riesgo de Obsolescencia', subtitle: 'La brecha competitiva crece cada día. Es urgente iniciar la digitalización básica.' },
+      { min: 23, max: 44, color: '#F97316', label: 'Nivel Inicial', title: 'Primeros Pasos', subtitle: 'Conciencia del potencial pero adopción incipiente. Se requiere una hoja de ruta clara.' },
+      { min: 45, max: 57, color: '#F59E0B', label: 'Nivel Intermedio', title: 'En Construcción', subtitle: 'Integración iniciada en áreas clave. El siguiente paso es la estandarización.' },
+      { min: 58, max: 75, color: '#10B981', label: 'Nivel Avanzado', title: 'Ventaja Competitiva', subtitle: 'IA como motor de eficiencia real. Usted ya está superando al promedio del mercado.' },
+      { min: 76, max: 88, color: '#3B82F6', label: 'Nivel Líder', title: 'Líder Digital', subtitle: 'Organización de alto rendimiento impulsada por algoritmos. Enfoque en innovación disruptiva.' }
     ];
 
     const recLibrary = {
-      ops: [{ threshold: 0.5, title: 'Automatización Inmediata', text: 'Identifique las 3 tareas más repetitivas y use herramientas como Make o Zapier.' }, { threshold: 0.8, title: 'Optimización con IA', text: 'Integre Copilot o ChatGPT en los flujos de redacción.' }],
-      supply: [{ threshold: 0.5, title: 'Centralización de Stock', text: 'Migre sus registros a una base de datos única en la nube.' }, { threshold: 0.8, title: 'Predicción de Demanda', text: 'Implemente modelos simples de proyección.' }],
-      decisions: [{ threshold: 0.5, title: 'Cultura Data-Driven', text: 'Construya un dashboard básico con sus 5 KPIs principales.' }, { threshold: 0.8, title: 'Análisis Predictivo', text: 'Use IA para identificar patrones de compra.' }],
-      cx: [{ threshold: 0.5, title: 'Soporte 24/7', text: 'Instale un chatbot con IA para dudas frecuentes.' }, { threshold: 0.8, title: 'Hiper-personalización', text: 'Automatice ofertas basadas en historial.' }],
-      data: [{ threshold: 0.5, title: 'Seguridad y Nube', text: 'Respalde todos sus datos operativos en la nube.' }, { threshold: 0.8, title: 'Gobierno de Datos', text: 'Establezca políticas claras de acceso.' }],
-      talent: [{ threshold: 0.5, title: 'Alfabetización IA', text: 'Capacite a su equipo en el uso básico de IA generativa.' }, { threshold: 0.8, title: 'Workshops Avanzados', text: 'Cree una hoja de ruta estratégica.' }],
-      viabilidad: [{ threshold: 0.5, title: 'Preparación Estructural', text: 'Documente procesos antes de automatizarlos.' }, { threshold: 0.8, title: 'Escalamiento Ágil', text: 'Inicie pilotos en áreas lógicas.' }]
+      ops: [
+        { threshold: 0.5, title: 'Digitalización de Procesos', text: 'Migre sus flujos de trabajo manuales a herramientas digitales centralizadas.' },
+        { threshold: 0.8, title: 'Optimización con Agentes IA', text: 'Implemente agentes de IA para supervisar y ejecutar tareas operativas 24/7.' }
+      ],
+      supply: [
+        { threshold: 0.5, title: 'Control de Inventario Digital', text: 'Implemente un sistema centralizado para evitar rupturas de stock.' },
+        { threshold: 0.8, title: 'IA para Supply Chain', text: 'Utilice modelos predictivos para optimizar sus pedidos y negociaciones.' }
+      ],
+      decisions: [
+        { threshold: 0.5, title: 'Visualización de KPIs', text: 'Cree dashboards en tiempo real para dejar de decidir por instinto.' },
+        { threshold: 0.8, title: 'Inteligencia Prescriptiva', text: 'Use IA para sugerir acciones basadas en escenarios futuros.' }
+      ],
+      cx: [
+        { threshold: 0.5, title: 'Atención Automatizada', text: 'Implemente un chatbot de FAQ para liberar tiempo de su equipo.' },
+        { threshold: 0.8, title: 'Experiencia Personalizada', text: 'Utilice IA generativa para personalizar cada interacción con el cliente.' }
+      ],
+      data: [
+        { threshold: 0.5, title: 'Higiene de Datos', text: 'Asegure que sus datos estén limpios, estructurados y seguros en la nube.' },
+        { threshold: 0.8, title: 'Arquitectura de Datos IA', text: 'Prepare sus bases de datos para alimentar modelos de lenguaje (LLMs).' }
+      ],
+      talent: [
+        { threshold: 0.5, title: 'Cultura Digital', text: 'Inicie programas de sensibilización sobre el potencial de la tecnología.' },
+        { threshold: 0.8, title: 'Liderazgo en IA', text: 'Capacite a sus directivos en la gobernanza y ética de la IA.' }
+      ],
+      viabilidad: [
+        { threshold: 0.5, title: 'Cimientos Operativos', text: 'Estandarice procesos antes de intentar automatizarlos.' },
+        { threshold: 0.8, title: 'Escalamiento Agresivo', text: 'Usted tiene la madurez necesaria para liderar su sector mediante IA.' }
+      ]
     };
 
     let answers = {};
@@ -509,25 +543,69 @@
       });
 
       // 4. MATRIZ DE VIABILIDAD
-      const md = (answers[12]+answers[13]+answers[14]+answers[15]+answers[16])/5;
-      const su = (answers[17]+answers[18]+answers[19]+answers[20]+answers[21])/5;
-      html += `<div class="section-title">Matriz de Viabilidad Operativa de IA</div>`;
-      html += renderScatter([{ x: md, y: su, n: 'Su Negocio' }], 'Baja Susceptibilidad', 'Alta Susceptibilidad', 'Baja Madurez', 'Alta Madurez');
+      const md = (answers[12]+answers[13]+answers[14]+answers[15]+answers[16]); // Max 20
+      const su = (answers[17]+answers[18]+answers[19]+answers[20]+answers[21]); // Max 20
+      const mdPct = Math.round((md / 20) * 100);
+      const suPct = Math.round((su / 20) * 100);
+      const globalScore = Math.round((mdPct + suPct) / 2);
+      
+      let statusColor = '#EF4444';
+      let statusText = 'Crítico / Sin Rumbo';
+      if(globalScore > 60) { statusColor = '#10B981'; statusText = 'Listo para IA'; }
+      else if(globalScore > 30) { statusColor = '#F59E0B'; statusText = 'Estructura en Transición'; }
+
+      html += `
+        <div class="section-title">Diagnóstico de Viabilidad IA</div>
+        <p class="section-sub">Anexo de viabilidad para integración de Inteligencia Artificial.</p>
+        
+        <div class="semaforo-container">
+          <div class="semaforo-card">
+            <div class="semaforo-header"><span class="semaforo-title">Madurez Digital (IMD)</span></div>
+            <span class="semaforo-value">${mdPct}%</span>
+            <span class="semaforo-desc">Qué tan lista está la casa</span>
+          </div>
+          <div class="semaforo-card">
+            <div class="semaforo-header"><span class="semaforo-title">Susceptibilidad IA (ISI)</span></div>
+            <span class="semaforo-value">${suPct}%</span>
+            <span class="semaforo-desc">Potencial de automatización</span>
+          </div>
+          <div class="semaforo-card">
+            <div class="semaforo-header">
+              <span class="semaforo-title">Semáforo de IA</span>
+              <span class="semaforo-badge">ATENCIÓN</span>
+            </div>
+            <div class="semaforo-indicator">
+              <div class="semaforo-dot" style="color:${statusColor}; background:currentColor"></div>
+              <div>
+                <div class="semaforo-status">${statusText}</div>
+                <div class="semaforo-score-text">Puntaje Global: ${globalScore}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Matriz de Viabilidad IA</div>
+        <p class="section-sub">Posicionamiento de la empresa según su madurez digital y necesidad de IA.</p>
+      `;
+
+      html += renderScatter([{ x: (md/20)*8, y: (su/20)*5, n: 'Su Negocio' }], 'Baja Susceptibilidad', 'Alta Susceptibilidad', 'Baja Madurez', 'Alta Madurez');
 
       // 5. VIABILIDAD BREAKDOWN
-      const vScore = scores['viabilidad'];
       html += `
         <div class="section-title">Desglose de Viabilidad</div>
         <div class="via-stats-container">
-          <div class="via-stat-item"><div class="via-stat-label">Nube / Datos</div><div class="via-stat-value">${answers[12]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[12]/4)*100}%"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Información</div><div class="via-stat-value">${answers[12]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[12]/4)*100}%"></div></div></div>
           <div class="via-stat-item"><div class="via-stat-label">Procesos</div><div class="via-stat-value">${answers[13]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[13]/4)*100}%"></div></div></div>
-          <div class="via-stat-item"><div class="via-stat-label">Herramientas</div><div class="via-stat-value">${answers[14]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[14]/4)*100}%"></div></div></div>
-          <div class="via-stat-item"><div class="via-stat-label">Formación</div><div class="via-stat-value">${answers[15]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[15]/4)*100}%"></div></div></div>
-          <div class="via-stat-item"><div class="via-stat-label">Decisiones</div><div class="via-stat-value">${answers[16]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[16]/4)*100}%"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Integración</div><div class="via-stat-value">${answers[14]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[14]/4)*100}%"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Talento</div><div class="via-stat-value">${answers[15]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[15]/4)*100}%"></div></div></div>
+          <div class="via-stat-item"><div class="via-stat-label">Datos TR</div><div class="via-stat-value">${answers[16]}/4</div><div class="via-stat-bar"><div class="via-stat-fill" style="width:${(answers[16]/4)*100}%"></div></div></div>
         </div>
-        <div class="via-badge-box">
-          <div class="via-badge-tag">Veredicto de Viabilidad</div>
-          <div class="via-badge-text">${vScore > 30 ? 'Su empresa está lista para una implementación masiva de IA.' : vScore > 15 ? 'Existen bases sólidas pero requiere orden operativo previo.' : 'Se recomienda priorizar la digitalización básica.'}</div>
+        
+        <div style="background: rgba(45, 91, 255, 0.1); padding: 30px; border-radius: 12px; border-left: 4px solid var(--primary); margin: 40px 0;">
+          <p style="font-size: 1.1rem; line-height: 1.6;">
+            Basado en su índice de Susceptibilidad del <strong>${suPct}%</strong>, su empresa tiene un potencial de automatización de tareas críticas que se traduce en ahorro de tiempo y dinero. 
+            Con un índice de Madurez de <strong>${mdPct}%</strong>, se ubica en un nivel de <strong>${statusText}</strong>.
+          </p>
         </div>
       `;
 
