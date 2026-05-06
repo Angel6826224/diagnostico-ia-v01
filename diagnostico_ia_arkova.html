@@ -1148,6 +1148,42 @@
       });
       flowHtml += `</div>`;
 
+      // 1.5 MATRIZ DE PRIORIDADES (NUEVO)
+      const priorityPts = dimensions.filter(d => d.id !== 'viabilidad').map(d => {
+        const impact = { ops: 85, supply: 45, decisions: 95, cx: 75, data: 60, talent: 90 }[d.id] || 50;
+        const adoption = (scores[d.id] / d.maxPts) * 100;
+        return { x: adoption, y: impact, label: d.label };
+      });
+
+      flowHtml += `
+        <div class="section-title">Matriz de Prioridades de Implementación</div>
+        <p class="section-sub">Relación entre nivel de adopción e impacto estratégico.</p>
+        
+        <div class="priority-matrix-wrapper" style="margin-top: 20px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; padding: 40px; position: relative;">
+          <style>
+            .priority-matrix-area { height: 400px; width: 100%; border-left: 2px solid var(--border); border-bottom: 2px solid var(--border); position: relative; margin-top: 20px; background: rgba(255,255,255,0.01); }
+            .priority-y-label { position: absolute; left: -60px; top: 50%; transform: rotate(-90deg) translateY(-50%); font-size: 10px; font-weight: 900; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+            .priority-y-top { position: absolute; left: -40px; top: 0; font-size: 10px; font-weight: 900; color: var(--text-dim); }
+            .priority-x-label { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 900; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+            .priority-corner-tag { position: absolute; font-size: 10px; font-weight: 900; color: rgba(255,255,255,0.2); text-transform: uppercase; pointer-events: none; }
+            .priority-point { position: absolute; transform: translate(-50%, 50%); background: white; color: black; padding: 6px 14px; border-radius: 6px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 15px rgba(0,0,0,0.5); white-space: nowrap; transition: all 0.3s; }
+            .priority-point:hover { transform: translate(-50%, 50%) scale(1.1); z-index: 10; }
+          </style>
+          <div class="priority-matrix-area">
+            <div class="priority-y-label">Impacto</div>
+            <div class="priority-y-top">ALTO</div>
+            <div class="priority-x-label">Alta Adopción</div>
+            
+            <div class="priority-corner-tag" style="top: 20px; left: 20px;">ALTO IMPACTO / BAJA ADOPCIÓN</div>
+            <div class="priority-corner-tag" style="bottom: 20px; right: 20px;">BAJO IMPACTO / ALTA ADOPCIÓN</div>
+
+            ${priorityPts.map(p => `
+              <div class="priority-point" style="left: ${p.x}%; bottom: ${p.y}%;">${p.label}</div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
       // 2. DESGLOSE DETALLADO
       flowHtml += `<div class="section-title">Análisis por Dimensión</div>`;
       dimensions.forEach(d => {
