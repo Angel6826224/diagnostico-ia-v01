@@ -1085,13 +1085,32 @@
     }
 
     function startAssessment() { document.getElementById('screen-intro').style.display = 'none'; document.getElementById('progress-wrap').style.display = 'flex'; showQuestion(0); }
-    function showQuestion(idx) { document.querySelectorAll('.question-screen').forEach(s => s.style.display = 'none'); document.getElementById(`q-screen-${idx}`).style.display = 'block'; updateProgress(idx); currentQ = idx; window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    function selectAnswer(qIdx, score, optIdx) { 
-      answers[qIdx] = score; 
-      document.querySelectorAll(`#q-screen-${qIdx} .opt-btn`).forEach(b => b.classList.remove('selected')); 
-      document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('selected'); 
-      document.getElementById(`btn-next-${qIdx}`).disabled = false;
+    function showQuestion(idx) {
+      document.querySelectorAll('.question-screen').forEach(s => s.style.display = 'none');
+      const qScreen = document.getElementById(`q-screen-${idx}`);
+      qScreen.style.display = 'block';
+      updateProgress(idx);
+      currentQ = idx;
       
+      // Scroll to the question container with an offset for the header
+      const offset = 120; 
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = qScreen.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+
+    function selectAnswer(qIdx, score, optIdx) {
+      answers[qIdx] = score;
+      document.querySelectorAll(`#q-screen-${qIdx} .opt-btn`).forEach(b => b.classList.remove('selected'));
+      document.getElementById(`opt-${qIdx}-${optIdx}`).classList.add('selected');
+      document.getElementById(`btn-next-${qIdx}`).disabled = false;
+
       // Auto-advance if score is 0 (No aplica)
       if (score === 0) {
         setTimeout(() => {
@@ -1148,7 +1167,7 @@
       });
       flowHtml += `</div>`;
 
-      // 1.5 MATRIZ DE PRIORIDADES (NUEVO)
+      // 1.5 MATRIZ DE PRIORIDADES
       const priorityPts = dimensions.filter(d => d.id !== 'viabilidad').map(d => {
         const impact = { ops: 85, supply: 45, decisions: 95, cx: 75, data: 60, talent: 90 }[d.id] || 50;
         const adoption = (scores[d.id] / d.maxPts) * 100;
@@ -1192,7 +1211,7 @@
         const interp = pct > 0.8 ? 'Nivel óptimo. Enfoque en escalamiento.' : pct > 0.5 ? 'Avance significativo. Requiere estandarización.' : 'Oportunidad crítica de mejora inmediata.';
 
         flowHtml += `
-          <div class="dim-card">
+          <div class="dim-card" style="break-inside: avoid;">
             <div class="dim-row">
               <div class="dim-row-icon">${d.icon}</div>
               <div class="dim-row-info">
@@ -1227,23 +1246,10 @@
       else if (globalScore > 30) { statusColor = '#F59E0B'; statusText = 'Estructura en Transición'; }
 
       flowHtml += `
-        <div class="section-title">Diagnóstico de Viabilidad IA</div>
+        <div class="section-title" style="break-inside: avoid;">Diagnóstico de Viabilidad IA</div>
         <p class="section-sub">Anexo de viabilidad para integración de Inteligencia Artificial.</p>
         
-        <div class="semaforo-container">
-          <style>
-            .semaforo-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 40px 0; }
-            .semaforo-card { background: var(--surface-light); padding: 30px; border-radius: 16px; border: 1px solid var(--border); position: relative; }
-            .semaforo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-            .semaforo-title { font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: var(--text-dim); }
-            .semaforo-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 900; background: rgba(255,255,255,0.05); }
-            .semaforo-value { font-size: 42px; font-weight: 900; color: var(--primary); display: block; margin-bottom: 4px; }
-            .semaforo-desc { font-size: 0.85rem; color: var(--text-dim); }
-            .semaforo-indicator { display: flex; align-items: center; gap: 16px; margin-top: 20px; }
-            .semaforo-dot { width: 40px; height: 40px; border-radius: 50%; box-shadow: 0 0 20px currentColor; }
-            .semaforo-status { font-weight: 900; font-size: 1.1rem; }
-            .semaforo-score-text { font-size: 0.8rem; opacity: 0.7; }
-          </style>
+        <div class="semaforo-container" style="break-inside: avoid;">
           <div class="semaforo-card">
             <div class="semaforo-header"><span class="semaforo-title">Madurez Digital (IMD)</span></div>
             <span class="semaforo-value">${mdPct}%</span>
@@ -1269,11 +1275,11 @@
           </div>
         </div>
 
-        <div class="section-title">Matriz de Viabilidad IA</div>
+        <div class="section-title" style="break-inside: avoid;">Matriz de Viabilidad IA</div>
         <p class="section-sub">Posicionamiento de la empresa según su madurez digital y necesidad de IA.</p>
         ${renderScatter([{ x: (md / 20) * 8, y: (su / 20) * 5, n: 'Su Negocio' }], 'Baja Susceptibilidad', 'Alta Susceptibilidad', 'Baja Madurez', 'Alta Madurez')}
 
-        <div style="background: rgba(45, 91, 255, 0.1); padding: 30px; border-radius: 12px; border-left: 4px solid var(--primary); margin: 40px 0;">
+        <div style="background: rgba(45, 91, 255, 0.1); padding: 30px; border-radius: 12px; border-left: 4px solid var(--primary); margin: 40px 0; break-inside: avoid;">
           <p style="font-size: 1.1rem; line-height: 1.6;">
             Basado en su índice de Susceptibilidad del <strong>${suPct}%</strong>, su empresa tiene un potencial de automatización de tareas críticas que se traduce en ahorro de tiempo y dinero. 
             Con un índice de Madurez de <strong>${mdPct}%</strong>, se ubica en un nivel de <strong>${statusText}</strong>.
@@ -1292,6 +1298,7 @@
         if (app.length > 0) {
           const div = document.createElement('div');
           div.className = 'rec-dim-group';
+          div.style.breakInside = 'avoid';
           div.innerHTML = `
             <div class="rec-dim-header"><span class="rec-dim-icon">${d.icon}</span><span class="rec-dim-label">${d.label}</span></div>
             <div class="rec-dim-body"><strong>${app[0].title}:</strong> ${app[0].text}</div>
@@ -1304,7 +1311,7 @@
 
     function renderScatter(pts, y0, y1, x0, x1) {
       return `
-        <div class="scatter-wrapper">
+        <div class="scatter-wrapper" style="break-inside: avoid;">
           <div class="scatter-y-axis">${y1}</div>
           <div class="scatter-main">
             <div class="scatter-box">
@@ -1324,22 +1331,42 @@
 
     async function generateFullPDF() {
       const results = document.getElementById('screen-results');
-      const canvas = await html2canvas(results, { scale: 2, backgroundColor: '#030712', ignoreElements: (el) => el.classList.contains('no-pdf-print') });
+      // Create a cloned version to adjust for PDF printing
+      const canvas = await html2canvas(results, { 
+        scale: 2, 
+        backgroundColor: '#030712', 
+        useCORS: true,
+        ignoreElements: (el) => el.classList.contains('no-pdf-print') 
+      });
+      
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const width = pdf.internal.pageSize.getWidth();
-      const height = (canvas.height * width) / canvas.width;
-      let heightLeft = height;
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = pdfWidth / imgWidth;
+      const canvasPageHeight = pdfHeight / ratio;
+      
+      let heightLeft = imgHeight;
       let position = 0;
-      pdf.addImage(imgData, 'PNG', 0, position, width, height);
-      heightLeft -= 295;
-      while (heightLeft >= 0) {
-        position = heightLeft - height;
+      let page = 1;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * ratio);
+      heightLeft -= canvasPageHeight;
+
+      // Add subsequent pages if needed
+      while (heightLeft > 0) {
+        position = -(canvasPageHeight * page);
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, width, height);
-        heightLeft -= 297;
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * ratio);
+        heightLeft -= canvasPageHeight;
+        page++;
       }
+      
       pdf.save('Diagnostico_Arkova_IA_Completo.pdf');
     }
 
