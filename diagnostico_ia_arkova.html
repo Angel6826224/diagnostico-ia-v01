@@ -1331,13 +1331,23 @@
 
     async function generateFullPDF() {
       const results = document.getElementById('screen-results');
-      // Create a cloned version to adjust for PDF printing
+      
+      // Ensure the container is fully expanded for capture
+      const originalStyle = results.style.height;
+      results.style.height = 'auto';
+
       const canvas = await html2canvas(results, { 
         scale: 2, 
         backgroundColor: '#030712', 
         useCORS: true,
-        ignoreElements: (el) => el.classList.contains('no-pdf-print') 
+        allowTaint: true,
+        logging: false,
+        width: results.scrollWidth,
+        height: results.scrollHeight,
+        windowHeight: results.scrollHeight
       });
+      
+      results.style.height = originalStyle;
       
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
@@ -1348,23 +1358,21 @@
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
       const ratio = pdfWidth / imgWidth;
-      const canvasPageHeight = pdfHeight / ratio;
+      const totalImgHeightInPdf = imgHeight * ratio;
       
-      let heightLeft = imgHeight;
+      let heightLeft = totalImgHeightInPdf;
       let position = 0;
-      let page = 1;
 
       // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * ratio);
-      heightLeft -= canvasPageHeight;
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImgHeightInPdf);
+      heightLeft -= pdfHeight;
 
-      // Add subsequent pages if needed
+      // Add subsequent pages if the content exceeds one page
       while (heightLeft > 0) {
-        position = -(canvasPageHeight * page);
+        position = heightLeft - totalImgHeightInPdf;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight * ratio);
-        heightLeft -= canvasPageHeight;
-        page++;
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, totalImgHeightInPdf);
+        heightLeft -= pdfHeight;
       }
       
       pdf.save('Diagnostico_Arkova_IA_Completo.pdf');
